@@ -1,0 +1,85 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  DRIVER
+  MANAGER
+}
+
+enum TaskStatus {
+  PENDING
+  IN_PROGRESS
+  COMPLETED
+  CANCELLED
+}
+
+model User {
+  id           String   @id @default(uuid())
+  name         String
+  email        String   @unique
+  passwordHash String
+  role         Role
+  phone        String?
+  isActive     Boolean  @default(true)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  assignedTasks Task[]     @relation("DriverTasks")
+  createdTasks  Task[]     @relation("ManagerTasks")
+  auditLogs     AuditLog[]
+}
+
+model Task {
+  id                 String     @id @default(uuid())
+  title              String
+  description        String?
+  deliveryAddress    String
+  status             TaskStatus @default(PENDING)
+  scheduledFor       DateTime?
+  completedAt        DateTime?
+  createdAt          DateTime   @default(now())
+  updatedAt          DateTime   @updatedAt
+
+  assignedDriverId   String
+  assignedDriver     User       @relation("DriverTasks", fields: [assignedDriverId], references: [id])
+
+  createdByManagerId String
+  createdByManager   User       @relation("ManagerTasks", fields: [createdByManagerId], references: [id])
+
+  completion         TaskCompletion?
+
+  @@index([assignedDriverId])
+  @@index([status])
+}
+
+model TaskCompletion {
+  id                String   @id @default(uuid())
+  recipientName     String
+  signatureImageUrl String
+  completedAt       DateTime @default(now())
+  createdAt         DateTime @default(now())
+
+  taskId            String   @unique
+  task              Task     @relation(fields: [taskId], references: [id])
+}
+
+model AuditLog {
+  id         String   @id @default(uuid())
+  action     String
+  entityType String
+  entityId   String
+  ipAddress  String?
+  createdAt  DateTime @default(now())
+
+  userId     String
+  user       User     @relation(fields: [userId], references: [id])
+
+  @@index([userId])
+  @@index([entityType, entityId])
+}
