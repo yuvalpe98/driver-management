@@ -18,6 +18,12 @@ enum TaskStatus {
   CANCELLED
 }
 
+enum EquipmentStatus {
+  GOOD
+  NEEDS_REPAIR
+  MISSING
+}
+
 model User {
   id           String   @id @default(uuid())
   name         String
@@ -29,9 +35,10 @@ model User {
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
 
-  assignedTasks Task[]     @relation("DriverTasks")
-  createdTasks  Task[]     @relation("ManagerTasks")
+  assignedTasks Task[]      @relation("DriverTasks")
+  createdTasks  Task[]      @relation("ManagerTasks")
   auditLogs     AuditLog[]
+  equipment     Equipment[]
 }
 
 model Task {
@@ -66,6 +73,21 @@ model TaskCompletion {
 
   taskId            String   @unique
   task              Task     @relation(fields: [taskId], references: [id])
+}
+
+model Equipment {
+  id        String          @id @default(uuid())
+  name      String
+  status    EquipmentStatus @default(GOOD)
+  notes     String?
+  createdAt DateTime        @default(now())
+  updatedAt DateTime        @updatedAt
+
+  driverId  String
+  driver    User            @relation(fields: [driverId], references: [id])
+
+  @@index([driverId])
+  @@index([status])
 }
 
 model AuditLog {

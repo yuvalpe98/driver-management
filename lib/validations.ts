@@ -24,3 +24,12 @@ export const completeTaskSchema = z.object({
   recipientName: z.string().min(2).max(100),
   signatureBase64: z.string().min(1),
 });
+
+export const createEquipmentSchema = z.object({
+  name: z.string().min(2).max(100),
+});
+
+export const updateEquipmentSchema = z.object({
+  status: z.enum(["GOOD", "NEEDS_REPAIR", "MISSING"]),
+  notes: z.string().max(500).optional(),
+});

@@ -1,12 +1,21 @@
 "use client";
 
 import { signOut } from "next-auth/react";
+import Link from "next/link";
+import { usePathname } from "next/navigation";
+
+const links = [
+  { href: "/driver/dashboard", label: "משימות" },
+  { href: "/driver/equipment", label: "ציוד" },
+];
 
 interface DriverNavbarProps {
   userName: string;
 }
 
 export default function DriverNavbar({ userName }: DriverNavbarProps) {
+  const pathname = usePathname();
+
   return (
     <header className="bg-white border-b border-slate-200 sticky top-0 z-10">
       <div className="max-w-2xl mx-auto px-4 sm:px-6">
@@ -19,7 +28,21 @@ export default function DriverNavbar({ userName }: DriverNavbarProps) {
                   d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4" />
               </svg>
             </div>
-            <span className="font-bold text-slate-800 text-sm">המשימות שלי</span>
+            <nav className="flex gap-1 mr-2">
+              {links.map((link) => (
+                <Link
+                  key={link.href}
+                  href={link.href}
+                  className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${
+                    pathname.startsWith(link.href)
+                      ? "bg-blue-50 text-blue-700"
+                      : "text-slate-600 hover:bg-slate-100"
+                  }`}
+                >
+                  {link.label}
+                </Link>
+              ))}
+            </nav>
           </div>
 
           {/* User + logout */}

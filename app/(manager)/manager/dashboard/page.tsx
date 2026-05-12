@@ -20,7 +20,7 @@ const statusColor: Record<string, string> = {
 export default async function ManagerDashboard() {
   const session = await auth();
 
-  const [totalDrivers, totalTasks, completedTasks, pendingTasks, recentTasks] =
+  const [totalDrivers, totalTasks, completedTasks, pendingTasks, recentTasks, equipmentIssues] =
     await Promise.all([
       prisma.user.count({ where: { role: "DRIVER", isActive: true } }),
       prisma.task.count(),
@@ -38,6 +38,7 @@ export default async function ManagerDashboard() {
           assignedDriver: { select: { name: true } },
         },
       }),
+      prisma.equipment.count({ where: { status: { in: ["MISSING", "NEEDS_REPAIR"] } } }),
     ]);
 
   return (
@@ -49,6 +50,20 @@ export default async function ManagerDashboard() {
         </h1>
         <p className="text-slate-500 mt-1 text-sm">סקירה כללית של המערכת</p>
       </div>
+
+      {/* Equipment alert */}
+      {equipmentIssues > 0 && (
+        <Link
+          href="/manager/equipment"
+          className="flex items-center gap-3 bg-red-50 border border-red-200 rounded-2xl px-5 py-4 hover:bg-red-100 transition-colors"
+        >
+          <span className="text-2xl">⚠️</span>
+          <div className="flex-1">
+            <p className="font-semibold text-red-800 text-sm">בעיות ציוד פעילות</p>
+            <p className="text-red-600 text-xs mt-0.5">{equipmentIssues} פריטים דורשים תשומת לב ← לחץ לפרטים</p>
+          </div>
+        </Link>
+      )}
 
       {/* Stats */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">

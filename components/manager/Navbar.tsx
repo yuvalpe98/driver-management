@@ -8,6 +8,7 @@ const links = [
   { href: "/manager/dashboard", label: "לוח בקרה" },
   { href: "/manager/drivers", label: "נהגים" },
   { href: "/manager/tasks", label: "משימות" },
+  { href: "/manager/equipment", label: "ציוד" },
 ];
 
 interface NavbarProps {
