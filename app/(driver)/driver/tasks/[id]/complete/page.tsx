@@ -12,16 +12,20 @@ export default async function CompleteTaskPage({
   const driverId = session!.user.id;
   const { id } = await params;
 
-  // SECURITY: ownership check — driver can only complete their own tasks
-  const task = await prisma.task.findUnique({
-    where: { id, assignedDriverId: driverId },
-    select: { id: true, title: true, deliveryAddress: true, status: true },
-  });
+  // SECURITY: ownership check
+  const [task, equipment] = await Promise.all([
+    prisma.task.findUnique({
+      where: { id, assignedDriverId: driverId },
+      select: { id: true, title: true, deliveryAddress: true, status: true },
+    }),
+    prisma.equipment.findMany({
+      where: { driverId },
+      orderBy: { name: "asc" },
+      select: { id: true, name: true, status: true },
+    }),
+  ]);
 
-  if (!task) notFound();
-
-  // Already completed — redirect back
-  if (task.status === "COMPLETED" || task.status === "CANCELLED") {
+  if (!task || task.status === "COMPLETED" || task.status === "CANCELLED") {
     notFound();
   }
 
@@ -34,7 +38,7 @@ export default async function CompleteTaskPage({
         <p className="text-blue-600 text-sm mt-0.5">{task.deliveryAddress}</p>
       </div>
 
-      <CompleteTaskForm taskId={task.id} />
+      <CompleteTaskForm taskId={task.id} equipment={equipment} />
     </div>
   );
 }

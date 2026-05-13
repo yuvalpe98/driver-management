@@ -23,6 +23,14 @@ export const createTaskSchema = z.object({
 export const completeTaskSchema = z.object({
   recipientName: z.string().min(2).max(100),
   signatureBase64: z.string().min(1),
+  equipmentUpdates: z
+    .array(
+      z.object({
+        id: z.string().uuid(),
+        status: z.enum(["GOOD", "NEEDS_REPAIR", "MISSING"]),
+      })
+    )
+    .optional(),
 });
 
 export const createEquipmentSchema = z.object({

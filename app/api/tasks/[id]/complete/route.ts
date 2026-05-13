@@ -12,34 +12,34 @@ export async function POST(
   if (error || !session) return error;
 
   const { id } = await params;
+  const driverId = session.user.id;
 
-  // Verify task exists and belongs to this driver
   const task = await prisma.task.findUnique({
-    where: { id, assignedDriverId: session.user.id },
+    where: { id, assignedDriverId: driverId },
     select: { id: true, status: true },
   });
 
-  if (!task) {
-    return NextResponse.json({ error: "המשימה לא נמצאה" }, { status: 404 });
-  }
-
-  if (task.status === "COMPLETED") {
-    return NextResponse.json({ error: "המשימה כבר הושלמה" }, { status: 409 });
-  }
-
-  if (task.status === "CANCELLED") {
-    return NextResponse.json({ error: "לא ניתן להשלים משימה שבוטלה" }, { status: 409 });
-  }
+  if (!task) return NextResponse.json({ error: "המשימה לא נמצאה" }, { status: 404 });
+  if (task.status === "COMPLETED") return NextResponse.json({ error: "המשימה כבר הושלמה" }, { status: 409 });
+  if (task.status === "CANCELLED") return NextResponse.json({ error: "לא ניתן להשלים משימה שבוטלה" }, { status: 409 });
 
   const body = await req.json().catch(() => null);
   const parsed = completeTaskSchema.safeParse(body);
-  if (!parsed.success) {
-    return NextResponse.json({ error: "נתונים לא תקינים" }, { status: 400 });
+  if (!parsed.success) return NextResponse.json({ error: "נתונים לא תקינים" }, { status: 400 });
+
+  const { recipientName, signatureBase64, equipmentUpdates } = parsed.data;
+
+  // Verify all equipment IDs belong to this driver before touching them
+  if (equipmentUpdates && equipmentUpdates.length > 0) {
+    const ids = equipmentUpdates.map((e) => e.id);
+    const owned = await prisma.equipment.count({
+      where: { id: { in: ids }, driverId },
+    });
+    if (owned !== ids.length) {
+      return NextResponse.json({ error: "ציוד לא תקין" }, { status: 403 });
+    }
   }
 
-  const { recipientName, signatureBase64 } = parsed.data;
-
-  // Upload signature to Cloudinary — runs on server, credentials never exposed to client
   let signatureImageUrl: string;
   try {
     signatureImageUrl = await uploadSignature(signatureBase64);
@@ -47,23 +47,24 @@ export async function POST(
     return NextResponse.json({ error: "שגיאה בשמירת החתימה" }, { status: 500 });
   }
 
-  // Atomic transaction: create completion + update task status
-  // completedAt is always set by the server — never accepted from client
   const now = new Date();
 
+  // Single atomic transaction: task completion + equipment status updates
   await prisma.$transaction([
     prisma.taskCompletion.create({
-      data: {
-        taskId: id,
-        recipientName,
-        signatureImageUrl,
-        completedAt: now,
-      },
+      data: { taskId: id, recipientName, signatureImageUrl, completedAt: now },
     }),
     prisma.task.update({
       where: { id },
       data: { status: "COMPLETED", completedAt: now },
     }),
+    // Apply each equipment status update the driver submitted
+    ...(equipmentUpdates ?? []).map((eq) =>
+      prisma.equipment.update({
+        where: { id: eq.id },
+        data: { status: eq.status },
+      })
+    ),
   ]);
 
   return NextResponse.json({ success: true });
