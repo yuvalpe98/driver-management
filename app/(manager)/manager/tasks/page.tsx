@@ -61,6 +61,7 @@ export default async function TasksPage() {
                 <th className="text-right px-6 py-3 font-medium hidden sm:table-cell">נהג</th>
                 <th className="text-right px-6 py-3 font-medium hidden lg:table-cell">תאריך יצירה</th>
                 <th className="text-right px-6 py-3 font-medium">סטטוס</th>
+                <th className="px-6 py-3" />
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-50">
@@ -82,6 +83,14 @@ export default async function TasksPage() {
                     <span className={`text-xs font-medium px-2.5 py-1 rounded-full ${statusColor[task.status]}`}>
                       {statusLabel[task.status]}
                     </span>
+                  </td>
+                  <td className="px-6 py-4">
+                    <Link
+                      href={`/manager/tasks/${task.id}`}
+                      className="text-blue-600 hover:text-blue-700 font-medium text-xs"
+                    >
+                      פרטים
+                    </Link>
                   </td>
                 </tr>
               ))}

@@ -40,11 +40,11 @@ export async function POST(req: Request) {
   const task = await prisma.task.create({
     data: {
       title,
-      description,
+      description: description ?? null,
       deliveryAddress,
       assignedDriverId,
       createdByManagerId: session.user.id,
-      scheduledFor: scheduledFor ? new Date(scheduledFor) : undefined,
+      scheduledFor: scheduledFor ? new Date(scheduledFor) : null,
     },
     select: { id: true, title: true, status: true },
   });

@@ -33,6 +33,10 @@ export const completeTaskSchema = z.object({
     .optional(),
 });
 
+export const updateTaskStatusSchema = z.object({
+  status: z.enum(["IN_PROGRESS", "CANCELLED"]),
+});
+
 export const createEquipmentSchema = z.object({
   name: z.string().min(2).max(100),
 });

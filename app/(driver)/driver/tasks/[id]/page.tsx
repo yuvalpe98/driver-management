@@ -2,6 +2,7 @@ import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { notFound } from "next/navigation";
 import Link from "next/link";
+import StartTaskButton from "./StartTaskButton";
 
 const statusLabel: Record<string, string> = {
   PENDING:     "ממתין לביצוע",
@@ -43,6 +44,7 @@ export default async function DriverTaskPage({ params }: { params: Promise<{ id:
 
   const isCompleted = task.status === "COMPLETED";
   const isCancelled = task.status === "CANCELLED";
+  const isPending = task.status === "PENDING";
   const canComplete = task.status === "PENDING" || task.status === "IN_PROGRESS";
 
   return (
@@ -147,13 +149,15 @@ export default async function DriverTaskPage({ params }: { params: Promise<{ id:
         )}
       </div>
 
-      {/* Complete button */}
+      {/* Action buttons */}
+      {isPending && <StartTaskButton taskId={task.id} />}
+
       {canComplete && (
         <Link
           href={`/driver/tasks/${task.id}/complete`}
-          className="block w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-4 rounded-2xl text-center shadow-sm transition-colors text-base"
+          className="block w-full bg-green-600 hover:bg-green-700 text-white font-bold py-4 rounded-2xl text-center shadow-sm transition-colors text-base"
         >
-          סיים משימה ← חתימה
+          ✅ סיים משימה ← חתימה
         </Link>
       )}
     </div>

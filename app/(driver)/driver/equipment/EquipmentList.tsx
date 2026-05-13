@@ -41,7 +41,7 @@ function StatusButton({
       body: JSON.stringify({ status: next }),
     });
     setLoading(false);
-    if (res.ok) onUpdate(itemId, next);
+    if (res.ok) onUpdate(itemId, next as EquipmentStatus);
   }
 
   const cfg = statusConfig[currentStatus];

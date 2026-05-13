@@ -42,7 +42,7 @@ export default function CompleteTaskForm({
   function cycleStatus(id: string) {
     setEquipmentStatuses((prev) => {
       const current = prev[id] ?? "GOOD";
-      const next = statusCycle[(statusCycle.indexOf(current) + 1) % statusCycle.length];
+      const next = statusCycle[(statusCycle.indexOf(current) + 1) % statusCycle.length] as EquipmentStatus;
       return { ...prev, [id]: next };
     });
   }
