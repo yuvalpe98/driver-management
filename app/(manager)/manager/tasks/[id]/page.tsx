@@ -33,6 +33,7 @@ export default async function ManagerTaskDetailPage({
       description: true,
       deliveryAddress: true,
       status: true,
+      taskType: true,
       scheduledFor: true,
       completedAt: true,
       createdAt: true,
@@ -66,9 +67,14 @@ export default async function ManagerTaskDetailPage({
       <div className="bg-white rounded-2xl shadow-sm border border-slate-100 p-6 space-y-5">
         {/* Status + cancel */}
         <div className="flex items-center justify-between gap-4">
-          <span className={`inline-flex items-center text-sm font-semibold px-3 py-1.5 rounded-full border ${statusColor[task.status]}`}>
-            {statusLabel[task.status]}
-          </span>
+          <div className="flex items-center gap-2">
+            <span className={`inline-flex items-center text-sm font-semibold px-3 py-1.5 rounded-full border ${statusColor[task.status]}`}>
+              {statusLabel[task.status]}
+            </span>
+            <span className={`inline-flex items-center text-xs font-semibold px-3 py-1.5 rounded-full border ${task.taskType === "DELIVERY" ? "bg-blue-50 text-blue-700 border-blue-200" : "bg-orange-50 text-orange-700 border-orange-200"}`}>
+              {task.taskType === "DELIVERY" ? "📦 משלוח" : "🔧 תחזוקה"}
+            </span>
+          </div>
           {canCancel && <CancelTaskButton taskId={task.id} />}
         </div>
 

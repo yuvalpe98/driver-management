@@ -29,7 +29,7 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "נתונים לא תקינים" }, { status: 400 });
   }
 
-  const { title, description, deliveryAddress, assignedDriverId, scheduledFor, items } = parsed.data;
+  const { title, description, deliveryAddress, assignedDriverId, scheduledFor, taskType, items } = parsed.data;
 
   const driver = await prisma.user.findUnique({
     where: { id: assignedDriverId, role: "DRIVER", isActive: true },
@@ -70,6 +70,7 @@ export async function POST(req: Request) {
       deliveryAddress,
       assignedDriverId,
       createdByManagerId: session.user.id,
+      taskType,
       scheduledFor: scheduledFor ? new Date(scheduledFor) : null,
       ...(items && items.length > 0
         ? { items: { create: items.map((i) => ({ name: i.name, quantity: i.quantity })) } }

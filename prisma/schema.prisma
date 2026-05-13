@@ -24,6 +24,11 @@ enum EquipmentStatus {
   MISSING
 }
 
+enum TaskType {
+  DELIVERY
+  MAINTENANCE
+}
+
 model User {
   id           String   @id @default(uuid())
   name         String
@@ -48,6 +53,7 @@ model Task {
   description        String?
   deliveryAddress    String
   status             TaskStatus @default(PENDING)
+  taskType           TaskType   @default(DELIVERY)
   scheduledFor       DateTime?
   completedAt        DateTime?
   createdAt          DateTime   @default(now())

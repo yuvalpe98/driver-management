@@ -23,6 +23,7 @@ export default async function TasksPage() {
       title: true,
       deliveryAddress: true,
       status: true,
+      taskType: true,
       scheduledFor: true,
       createdAt: true,
       assignedDriver: { select: { name: true } },
@@ -68,7 +69,10 @@ export default async function TasksPage() {
               {tasks.map((task) => (
                 <tr key={task.id} className="hover:bg-slate-50 transition-colors">
                   <td className="px-6 py-4">
-                    <p className="font-medium text-slate-800 truncate max-w-[180px]">{task.title}</p>
+                    <div className="flex items-center gap-2">
+                      <span>{task.taskType === "DELIVERY" ? "📦" : "🔧"}</span>
+                      <p className="font-medium text-slate-800 truncate max-w-[160px]">{task.title}</p>
+                    </div>
                   </td>
                   <td className="px-6 py-4 text-slate-500 hidden md:table-cell">
                     <p className="truncate max-w-[200px]">{task.deliveryAddress}</p>

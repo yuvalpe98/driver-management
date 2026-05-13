@@ -23,6 +23,7 @@ export const createTaskSchema = z.object({
   deliveryAddress: z.string().min(5).max(500),
   assignedDriverId: z.string().uuid(),
   scheduledFor: z.string().datetime().optional(),
+  taskType: z.enum(["DELIVERY", "MAINTENANCE"]).optional().default("DELIVERY"),
   items: z.array(createTaskItemSchema).optional(),
 });
 
@@ -53,6 +54,14 @@ export const createInventoryItemSchema = z.object({
 export const updateInventoryItemSchema = z.object({
   quantity: z.number().int().min(0).optional(),
   unit: z.string().max(20).optional(),
+});
+
+export const updateDriverSchema = z.object({
+  name: z.string().min(2).max(100).optional(),
+  email: z.string().email().optional(),
+  phone: z.string().optional(),
+  password: z.string().min(8).max(72).optional(),
+  isActive: z.boolean().optional(),
 });
 
 export const createEquipmentSchema = z.object({

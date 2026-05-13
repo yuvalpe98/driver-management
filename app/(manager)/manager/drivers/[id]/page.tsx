@@ -62,6 +62,12 @@ export default async function DriverDetailPage({ params }: { params: Promise<{ i
             <span className={`text-xs font-medium px-3 py-1.5 rounded-full ${driver.isActive ? "bg-green-100 text-green-700" : "bg-slate-100 text-slate-500"}`}>
               {driver.isActive ? "פעיל" : "לא פעיל"}
             </span>
+            <Link
+              href={`/manager/drivers/${driver.id}/edit`}
+              className="px-3 py-1.5 text-xs font-medium border border-slate-200 rounded-lg hover:bg-slate-50 transition-colors text-slate-600"
+            >
+              ✏️ ערוך
+            </Link>
             <ToggleDriverButton driverId={driver.id} isActive={driver.isActive} />
           </div>
         </div>

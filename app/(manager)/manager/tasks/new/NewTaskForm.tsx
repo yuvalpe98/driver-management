@@ -14,13 +14,15 @@ interface RecommendedDriver {
   hasAllItems: boolean;
   distanceKm: number | null;
   openTaskCount: number;
-  inventoryMatch: { name: string; requested: number; available: number; sufficient: boolean }[];
 }
+
+type TaskType = "DELIVERY" | "MAINTENANCE";
 
 export default function NewTaskForm({ drivers }: { drivers: Driver[] }) {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [taskType, setTaskType] = useState<TaskType>("DELIVERY");
   const [form, setForm] = useState({
     title: "",
     description: "",
@@ -29,29 +31,41 @@ export default function NewTaskForm({ drivers }: { drivers: Driver[] }) {
     scheduledFor: "",
   });
 
+  const [allItemNames, setAllItemNames] = useState<string[]>([]);
   const [driverInventory, setDriverInventory] = useState<InventoryItem[]>([]);
-  const [inventoryLoading, setInventoryLoading] = useState(false);
   const [items, setItems] = useState<TaskItem[]>([]);
-  const [selectedItemName, setSelectedItemName] = useState("");
-  const [selectedItemQty, setSelectedItemQty] = useState(1);
+  const [newItemName, setNewItemName] = useState("");
+  const [newItemQty, setNewItemQty] = useState(1);
   const [recommendations, setRecommendations] = useState<RecommendedDriver[]>([]);
   const [recommendLoading, setRecommendLoading] = useState(false);
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  // Fetch all known item names once for the datalist suggestions
+  useEffect(() => {
+    fetch("/api/inventory")
+      .then((r) => r.json())
+      .then((data) => {
+        if (Array.isArray(data)) {
+          const names = [...new Set((data as InventoryItem[]).map((i) => i.name))].sort();
+          setAllItemNames(names);
+        }
+      })
+      .catch(() => {});
+  }, []);
+
+  // Fetch selected driver's inventory for stock warnings
+  useEffect(() => {
+    if (!form.assignedDriverId) { setDriverInventory([]); return; }
+    fetch(`/api/inventory?driverId=${form.assignedDriverId}`)
+      .then((r) => r.json())
+      .then((data) => setDriverInventory(Array.isArray(data) ? data : []))
+      .catch(() => setDriverInventory([]));
+  }, [form.assignedDriverId]);
 
   function set(field: keyof typeof form) {
     return (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) =>
       setForm((prev) => ({ ...prev, [field]: e.target.value }));
   }
-
-  useEffect(() => {
-    if (!form.assignedDriverId) { setDriverInventory([]); return; }
-    setInventoryLoading(true);
-    fetch(`/api/inventory?driverId=${form.assignedDriverId}`)
-      .then((r) => r.json())
-      .then((data) => setDriverInventory(Array.isArray(data) ? data : []))
-      .catch(() => setDriverInventory([]))
-      .finally(() => setInventoryLoading(false));
-  }, [form.assignedDriverId]);
 
   const fetchRecommendations = useCallback((address: string, taskItems: TaskItem[]) => {
     if (address.length < 5) { setRecommendations([]); return; }
@@ -78,14 +92,15 @@ export default function NewTaskForm({ drivers }: { drivers: Driver[] }) {
   }, [form.deliveryAddress, items, fetchRecommendations]);
 
   function addItem() {
-    if (!selectedItemName || selectedItemQty <= 0) return;
+    const name = newItemName.trim();
+    if (!name || newItemQty <= 0) return;
     setItems((prev) => {
-      const existing = prev.find((i) => i.name === selectedItemName);
-      if (existing) return prev.map((i) => i.name === selectedItemName ? { ...i, quantity: i.quantity + selectedItemQty } : i);
-      return [...prev, { name: selectedItemName, quantity: selectedItemQty }];
+      const existing = prev.find((i) => i.name === name);
+      if (existing) return prev.map((i) => i.name === name ? { ...i, quantity: i.quantity + newItemQty } : i);
+      return [...prev, { name, quantity: newItemQty }];
     });
-    setSelectedItemName("");
-    setSelectedItemQty(1);
+    setNewItemName("");
+    setNewItemQty(1);
   }
 
   function removeItem(name: string) {
@@ -106,8 +121,9 @@ export default function NewTaskForm({ drivers }: { drivers: Driver[] }) {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         ...form,
+        taskType,
         scheduledFor: form.scheduledFor ? new Date(form.scheduledFor).toISOString() : undefined,
-        items: items.length > 0 ? items : undefined,
+        items: taskType === "DELIVERY" && items.length > 0 ? items : undefined,
       }),
     });
     const data = await res.json();
@@ -132,11 +148,41 @@ export default function NewTaskForm({ drivers }: { drivers: Driver[] }) {
         <Link href="/manager/tasks" className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-slate-200 transition-colors text-slate-500">←</Link>
         <div>
           <h1 className="text-2xl font-bold text-slate-800">משימה חדשה</h1>
-          <p className="text-slate-500 text-sm mt-0.5">שבץ משימת משלוח לנהג</p>
+          <p className="text-slate-500 text-sm mt-0.5">שבץ משימה לנהג</p>
         </div>
       </div>
 
       <form onSubmit={handleSubmit} className="space-y-5">
+
+        {/* Task type toggle */}
+        <div className="bg-white rounded-2xl shadow-sm border border-slate-100 p-4">
+          <p className="text-xs text-slate-400 font-medium mb-3">סוג משימה</p>
+          <div className="flex gap-2">
+            <button
+              type="button"
+              onClick={() => setTaskType("DELIVERY")}
+              className={`flex-1 flex items-center justify-center gap-2 py-3 rounded-xl border text-sm font-semibold transition-all ${
+                taskType === "DELIVERY"
+                  ? "bg-blue-600 text-white border-blue-600 shadow-sm"
+                  : "bg-white text-slate-500 border-slate-200 hover:border-blue-300"
+              }`}
+            >
+              📦 משלוח
+            </button>
+            <button
+              type="button"
+              onClick={() => { setTaskType("MAINTENANCE"); setItems([]); }}
+              className={`flex-1 flex items-center justify-center gap-2 py-3 rounded-xl border text-sm font-semibold transition-all ${
+                taskType === "MAINTENANCE"
+                  ? "bg-orange-500 text-white border-orange-500 shadow-sm"
+                  : "bg-white text-slate-500 border-slate-200 hover:border-orange-300"
+              }`}
+            >
+              🔧 תחזוקה
+            </button>
+          </div>
+        </div>
+
         {/* Basic fields */}
         <div className="bg-white rounded-2xl shadow-sm border border-slate-100 p-6 space-y-5">
           <FormField label="כותרת המשימה" required>
@@ -152,6 +198,68 @@ export default function NewTaskForm({ drivers }: { drivers: Driver[] }) {
             <input type="datetime-local" className={inputClass} value={form.scheduledFor} onChange={set("scheduledFor")} />
           </FormField>
         </div>
+
+        {/* Delivery items — only for DELIVERY tasks */}
+        {taskType === "DELIVERY" && (
+          <div className="bg-white rounded-2xl shadow-sm border border-slate-100 p-6 space-y-4">
+            <div>
+              <h3 className="text-sm font-semibold text-slate-700">📦 פריטי משלוח</h3>
+              <p className="text-xs text-slate-400 mt-0.5">הוסף את הציוד שיש לספק</p>
+            </div>
+
+            <datalist id="item-suggestions">
+              {allItemNames.map((n) => <option key={n} value={n} />)}
+            </datalist>
+
+            <div className="flex gap-2">
+              <input
+                type="text"
+                list="item-suggestions"
+                placeholder="שם הפריט..."
+                value={newItemName}
+                onChange={(e) => setNewItemName(e.target.value)}
+                onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); addItem(); } }}
+                className="flex-1 border border-slate-200 rounded-xl px-3 py-2.5 text-sm bg-slate-50 focus:outline-none focus:ring-2 focus:ring-blue-300"
+              />
+              <input
+                type="number"
+                min={1}
+                value={newItemQty}
+                onChange={(e) => setNewItemQty(parseInt(e.target.value) || 1)}
+                className="w-20 border border-slate-200 rounded-xl px-3 py-2.5 text-sm bg-slate-50 text-center focus:outline-none focus:ring-2 focus:ring-blue-300"
+              />
+              <button
+                type="button"
+                onClick={addItem}
+                disabled={!newItemName.trim()}
+                className="px-4 py-2.5 bg-blue-600 hover:bg-blue-700 disabled:bg-slate-300 text-white text-sm font-semibold rounded-xl transition-colors"
+              >
+                הוסף
+              </button>
+            </div>
+
+            {items.length > 0 ? (
+              <div className="space-y-2">
+                {items.map((item) => {
+                  const avail = getAvailable(item.name);
+                  const over = avail !== null && item.quantity > avail;
+                  return (
+                    <div key={item.name} className={`flex items-center justify-between px-4 py-2.5 rounded-xl border text-sm ${over ? "bg-red-50 border-red-200" : "bg-slate-50 border-slate-100"}`}>
+                      <span className="font-medium text-slate-700">{item.name}</span>
+                      <div className="flex items-center gap-3">
+                        <span className={`font-bold ${over ? "text-red-600" : "text-slate-800"}`}>{item.quantity}</span>
+                        {over && <span className="text-xs text-red-500">⚠️ חורג ({avail} זמין)</span>}
+                        <button type="button" onClick={() => removeItem(item.name)} className="text-slate-400 hover:text-red-500 text-xs">הסר</button>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            ) : (
+              <p className="text-xs text-slate-400 text-center py-2">לא נוספו פריטים עדיין</p>
+            )}
+          </div>
+        )}
 
         {/* Driver recommendation */}
         {form.deliveryAddress.length >= 5 && (
@@ -175,8 +283,12 @@ export default function NewTaskForm({ drivers }: { drivers: Driver[] }) {
                 <div className="flex items-center justify-between gap-2">
                   <div className="flex items-center gap-2 flex-wrap">
                     <span className="font-semibold text-slate-800 text-sm">{rec.name}</span>
-                    {items.length > 0 && rec.hasAllItems && <span className="text-xs bg-green-100 text-green-700 px-2 py-0.5 rounded-full">✅ יש כל הפריטים</span>}
-                    {items.length > 0 && !rec.hasAllItems && <span className="text-xs bg-yellow-100 text-yellow-700 px-2 py-0.5 rounded-full">⚠️ חסרים פריטים</span>}
+                    {taskType === "DELIVERY" && items.length > 0 && rec.hasAllItems && (
+                      <span className="text-xs bg-green-100 text-green-700 px-2 py-0.5 rounded-full">✅ יש כל הפריטים</span>
+                    )}
+                    {taskType === "DELIVERY" && items.length > 0 && !rec.hasAllItems && (
+                      <span className="text-xs bg-yellow-100 text-yellow-700 px-2 py-0.5 rounded-full">⚠️ חסרים פריטים</span>
+                    )}
                   </div>
                   <span className="text-xs text-slate-400 shrink-0">
                     {rec.distanceKm !== null ? `~${rec.distanceKm.toFixed(1)} ק"מ` : `${rec.openTaskCount} משימות`}
@@ -187,66 +299,14 @@ export default function NewTaskForm({ drivers }: { drivers: Driver[] }) {
           </div>
         )}
 
-        {/* Driver + item picker */}
-        <div className="bg-white rounded-2xl shadow-sm border border-slate-100 p-6 space-y-5">
+        {/* Driver picker */}
+        <div className="bg-white rounded-2xl shadow-sm border border-slate-100 p-6">
           <FormField label="שבץ לנהג" required>
             <select className={inputClass} value={form.assignedDriverId} onChange={set("assignedDriverId")} required>
               <option value="">— בחר נהג —</option>
               {drivers.map((d) => <option key={d.id} value={d.id}>{d.name}</option>)}
             </select>
           </FormField>
-
-          {form.assignedDriverId && (
-            <div className="space-y-3 pt-2 border-t border-slate-50">
-              <p className="text-sm font-semibold text-slate-700">פריטי משלוח</p>
-              {inventoryLoading && <p className="text-xs text-slate-400">טוען מלאי...</p>}
-              {!inventoryLoading && driverInventory.length === 0 && (
-                <p className="text-xs text-slate-400">לנהג זה אין מלאי מוגדר</p>
-              )}
-              {!inventoryLoading && driverInventory.length > 0 && (
-                <div className="flex gap-2">
-                  <select
-                    value={selectedItemName}
-                    onChange={(e) => setSelectedItemName(e.target.value)}
-                    className="flex-1 border border-slate-200 rounded-xl px-3 py-2 text-sm bg-slate-50"
-                  >
-                    <option value="">— בחר פריט —</option>
-                    {driverInventory.map((inv) => (
-                      <option key={inv.id} value={inv.name}>{inv.name} (זמין: {inv.quantity} {inv.unit})</option>
-                    ))}
-                  </select>
-                  <input
-                    type="number"
-                    min={1}
-                    value={selectedItemQty}
-                    onChange={(e) => setSelectedItemQty(parseInt(e.target.value) || 1)}
-                    className="w-20 border border-slate-200 rounded-xl px-3 py-2 text-sm bg-slate-50 text-center"
-                  />
-                  <button type="button" onClick={addItem} disabled={!selectedItemName} className="px-4 py-2 bg-blue-600 hover:bg-blue-700 disabled:bg-slate-300 text-white text-sm font-semibold rounded-xl transition-colors">
-                    הוסף
-                  </button>
-                </div>
-              )}
-              {items.length > 0 && (
-                <div className="space-y-2">
-                  {items.map((item) => {
-                    const avail = getAvailable(item.name);
-                    const over = avail !== null && item.quantity > avail;
-                    return (
-                      <div key={item.name} className={`flex items-center justify-between px-4 py-2.5 rounded-xl border text-sm ${over ? "bg-red-50 border-red-200" : "bg-slate-50 border-slate-100"}`}>
-                        <span className="font-medium text-slate-700">{item.name}</span>
-                        <div className="flex items-center gap-3">
-                          <span className={`font-bold ${over ? "text-red-600" : "text-slate-800"}`}>{item.quantity}</span>
-                          {over && <span className="text-xs text-red-500">⚠️ חורג ({avail} זמין)</span>}
-                          <button type="button" onClick={() => removeItem(item.name)} className="text-slate-400 hover:text-red-500 text-xs">הסר</button>
-                        </div>
-                      </div>
-                    );
-                  })}
-                </div>
-              )}
-            </div>
-          )}
         </div>
 
         {error && (
