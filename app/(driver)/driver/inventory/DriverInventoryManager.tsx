@@ -74,15 +74,15 @@ export default function DriverInventoryManager({ initialItems }: { initialItems:
       )}
 
       {/* Item list */}
-      <div className="bg-white rounded-2xl border border-slate-100 shadow-sm">
+      <div className="bg-white dark:bg-slate-800 rounded-2xl border border-slate-100 dark:border-slate-700 shadow-sm">
         {items.length === 0 && !adding && (
-          <p className="py-12 text-center text-slate-400 text-sm">המלאי שלך ריק</p>
+          <p className="py-12 text-center text-slate-400 dark:text-slate-500 text-sm">המלאי שלך ריק</p>
         )}
         {items.length > 0 && (
-          <div className="divide-y divide-slate-50">
+          <div className="divide-y divide-slate-50 dark:divide-slate-700">
             {items.map((item) => (
               <div key={item.id} className="flex items-center gap-3 px-5 py-3.5">
-                <span className="flex-1 text-sm font-medium text-slate-700">{item.name}</span>
+                <span className="flex-1 text-sm font-medium text-slate-700 dark:text-slate-200">{item.name}</span>
                 {editingId === item.id ? (
                   <div className="flex items-center gap-2">
                     <input

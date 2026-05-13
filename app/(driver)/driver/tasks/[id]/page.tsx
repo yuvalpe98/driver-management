@@ -62,7 +62,7 @@ export default async function DriverTaskPage({ params }: { params: Promise<{ id:
       </Link>
 
       {/* Task card */}
-      <div className="bg-white rounded-2xl border border-slate-100 shadow-sm p-6 space-y-5">
+      <div className="bg-white dark:bg-slate-800 rounded-2xl border border-slate-100 dark:border-slate-700 shadow-sm p-6 space-y-5">
         {/* Status badge */}
         <span className={`inline-flex items-center text-sm font-semibold px-3 py-1.5 rounded-full border ${statusColor[task.status]}`}>
           {statusLabel[task.status]}
@@ -70,14 +70,14 @@ export default async function DriverTaskPage({ params }: { params: Promise<{ id:
 
         {/* Title */}
         <div>
-          <h1 className="text-xl font-bold text-slate-800">{task.title}</h1>
+          <h1 className="text-xl font-bold text-slate-800 dark:text-slate-100">{task.title}</h1>
           {task.description && (
             <p className="text-slate-500 text-sm mt-2">{task.description}</p>
           )}
         </div>
 
         {/* Details */}
-        <div className="space-y-3 pt-2 border-t border-slate-50">
+        <div className="space-y-3 pt-2 border-t border-slate-50 dark:border-slate-700">
           <div className="flex items-start gap-3">
             <div className="w-8 h-8 bg-slate-100 rounded-lg flex items-center justify-center shrink-0 mt-0.5">
               <svg className="w-4 h-4 text-slate-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -87,8 +87,8 @@ export default async function DriverTaskPage({ params }: { params: Promise<{ id:
               </svg>
             </div>
             <div>
-              <p className="text-xs text-slate-400 font-medium">כתובת מסירה</p>
-              <p className="text-slate-800 font-medium mt-0.5">{task.deliveryAddress}</p>
+              <p className="text-xs text-slate-400 dark:text-slate-500 font-medium">כתובת מסירה</p>
+              <p className="text-slate-800 dark:text-slate-100 font-medium mt-0.5">{task.deliveryAddress}</p>
             </div>
           </div>
 
@@ -132,13 +132,13 @@ export default async function DriverTaskPage({ params }: { params: Promise<{ id:
 
         {/* Delivery items */}
         {task.items.length > 0 && (
-          <div className="pt-2 border-t border-slate-50 space-y-2">
-            <p className="text-xs text-slate-400 font-medium">📦 פריטי משלוח</p>
+          <div className="pt-2 border-t border-slate-50 dark:border-slate-700 space-y-2">
+            <p className="text-xs text-slate-400 dark:text-slate-500 font-medium">📦 פריטי משלוח</p>
             <div className="space-y-1.5">
               {task.items.map((item) => (
-                <div key={item.name} className="flex items-center justify-between bg-slate-50 rounded-xl px-4 py-2.5 text-sm">
-                  <span className="text-slate-700 font-medium">{item.name}</span>
-                  <span className="font-bold text-slate-800">{item.quantity}</span>
+                <div key={item.name} className="flex items-center justify-between bg-slate-50 dark:bg-slate-700 rounded-xl px-4 py-2.5 text-sm">
+                  <span className="text-slate-700 dark:text-slate-200 font-medium">{item.name}</span>
+                  <span className="font-bold text-slate-800 dark:text-slate-100">{item.quantity}</span>
                 </div>
               ))}
             </div>

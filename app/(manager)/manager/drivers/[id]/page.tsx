@@ -39,21 +39,21 @@ export default async function DriverDetailPage({ params }: { params: Promise<{ i
         >
           ←
         </Link>
-        <h1 className="text-2xl font-bold text-slate-800">פרטי נהג</h1>
+        <h1 className="text-2xl font-bold text-slate-800 dark:text-slate-100">פרטי נהג</h1>
       </div>
 
       {/* Driver card */}
-      <div className="bg-white rounded-2xl shadow-sm border border-slate-100 p-6">
+      <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-700 p-6">
         <div className="flex items-start justify-between gap-4">
           <div className="flex items-center gap-4">
             <div className="w-14 h-14 bg-blue-100 rounded-2xl flex items-center justify-center text-xl font-bold text-blue-600">
               {driver.name.charAt(0)}
             </div>
             <div>
-              <h2 className="text-lg font-bold text-slate-800">{driver.name}</h2>
-              <p className="text-slate-500 text-sm">{driver.email}</p>
-              {driver.phone && <p className="text-slate-400 text-sm">{driver.phone}</p>}
-              <p className="text-slate-400 text-xs mt-1">
+              <h2 className="text-lg font-bold text-slate-800 dark:text-slate-100">{driver.name}</h2>
+              <p className="text-slate-500 dark:text-slate-400 text-sm">{driver.email}</p>
+              {driver.phone && <p className="text-slate-400 dark:text-slate-500 text-sm">{driver.phone}</p>}
+              <p className="text-slate-400 dark:text-slate-500 text-xs mt-1">
                 הצטרף: {new Date(driver.createdAt).toLocaleDateString("he-IL")}
               </p>
             </div>
@@ -74,21 +74,21 @@ export default async function DriverDetailPage({ params }: { params: Promise<{ i
       </div>
 
       {/* Tasks */}
-      <div className="bg-white rounded-2xl shadow-sm border border-slate-100">
-        <div className="px-6 py-4 border-b border-slate-100">
-          <h3 className="font-semibold text-slate-800">
+      <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-700">
+        <div className="px-6 py-4 border-b border-slate-100 dark:border-slate-700">
+          <h3 className="font-semibold text-slate-800 dark:text-slate-100">
             משימות ({driver.assignedTasks.length})
           </h3>
         </div>
         {driver.assignedTasks.length === 0 ? (
-          <div className="py-10 text-center text-slate-400 text-sm">אין משימות לנהג זה</div>
+          <div className="py-10 text-center text-slate-400 dark:text-slate-500 text-sm">אין משימות לנהג זה</div>
         ) : (
-          <div className="divide-y divide-slate-50">
+          <div className="divide-y divide-slate-50 dark:divide-slate-700">
             {driver.assignedTasks.map((task) => (
               <div key={task.id} className="px-6 py-4 flex items-center justify-between gap-4">
                 <div className="min-w-0">
-                  <p className="font-medium text-slate-800 text-sm">{task.title}</p>
-                  <p className="text-slate-400 text-xs mt-0.5 truncate">{task.deliveryAddress}</p>
+                  <p className="font-medium text-slate-800 dark:text-slate-100 text-sm">{task.title}</p>
+                  <p className="text-slate-400 dark:text-slate-500 text-xs mt-0.5 truncate">{task.deliveryAddress}</p>
                 </div>
                 <span className={`text-xs font-medium px-2.5 py-1 rounded-full shrink-0 ${statusColor[task.status]}`}>
                   {statusLabel[task.status]}

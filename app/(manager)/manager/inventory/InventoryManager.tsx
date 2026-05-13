@@ -73,8 +73,8 @@ export default function InventoryManager({ driverId, initialItems }: Props) {
       )}
 
       {items.map((item) => (
-        <div key={item.id} className="flex items-center gap-3 px-4 py-2.5 rounded-xl bg-slate-50 border border-slate-100">
-          <span className="flex-1 text-sm font-medium text-slate-700">{item.name}</span>
+        <div key={item.id} className="flex items-center gap-3 px-4 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-700 border border-slate-100 dark:border-slate-600">
+          <span className="flex-1 text-sm font-medium text-slate-700 dark:text-slate-200">{item.name}</span>
           {editingId === item.id ? (
             <div className="flex items-center gap-2">
               <input

@@ -69,13 +69,13 @@ export default function EditDriverForm({ driver }: { driver: Driver }) {
           ←
         </Link>
         <div>
-          <h1 className="text-2xl font-bold text-slate-800">עריכת פרטי נהג</h1>
-          <p className="text-slate-500 text-sm mt-0.5">{driver.name}</p>
+          <h1 className="text-2xl font-bold text-slate-800 dark:text-slate-100">עריכת פרטי נהג</h1>
+          <p className="text-slate-500 dark:text-slate-400 text-sm mt-0.5">{driver.name}</p>
         </div>
       </div>
 
       <form onSubmit={handleSubmit} className="space-y-5">
-        <div className="bg-white rounded-2xl shadow-sm border border-slate-100 p-6 space-y-5">
+        <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-700 p-6 space-y-5">
           <FormField label="שם" required>
             <input
               type="text"
@@ -138,7 +138,7 @@ export default function EditDriverForm({ driver }: { driver: Driver }) {
           </button>
           <Link
             href={`/manager/drivers/${driver.id}`}
-            className="px-4 py-2.5 rounded-xl border border-slate-200 text-slate-600 hover:bg-slate-50 transition-colors text-sm font-medium"
+            className="px-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-600 text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors text-sm font-medium"
           >
             ביטול
           </Link>

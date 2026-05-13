@@ -147,16 +147,16 @@ export default function NewTaskForm({ drivers }: { drivers: Driver[] }) {
       <div className="flex items-center gap-3 mb-8">
         <Link href="/manager/tasks" className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-slate-200 transition-colors text-slate-500">←</Link>
         <div>
-          <h1 className="text-2xl font-bold text-slate-800">משימה חדשה</h1>
-          <p className="text-slate-500 text-sm mt-0.5">שבץ משימה לנהג</p>
+          <h1 className="text-2xl font-bold text-slate-800 dark:text-slate-100">משימה חדשה</h1>
+          <p className="text-slate-500 dark:text-slate-400 text-sm mt-0.5">שבץ משימה לנהג</p>
         </div>
       </div>
 
       <form onSubmit={handleSubmit} className="space-y-5">
 
         {/* Task type toggle */}
-        <div className="bg-white rounded-2xl shadow-sm border border-slate-100 p-4">
-          <p className="text-xs text-slate-400 font-medium mb-3">סוג משימה</p>
+        <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-700 p-4">
+          <p className="text-xs text-slate-400 dark:text-slate-500 font-medium mb-3">סוג משימה</p>
           <div className="flex gap-2">
             <button
               type="button"
@@ -164,7 +164,7 @@ export default function NewTaskForm({ drivers }: { drivers: Driver[] }) {
               className={`flex-1 flex items-center justify-center gap-2 py-3 rounded-xl border text-sm font-semibold transition-all ${
                 taskType === "DELIVERY"
                   ? "bg-blue-600 text-white border-blue-600 shadow-sm"
-                  : "bg-white text-slate-500 border-slate-200 hover:border-blue-300"
+                  : "bg-white dark:bg-slate-700 text-slate-500 dark:text-slate-300 border-slate-200 dark:border-slate-600 hover:border-blue-300"
               }`}
             >
               📦 משלוח
@@ -175,7 +175,7 @@ export default function NewTaskForm({ drivers }: { drivers: Driver[] }) {
               className={`flex-1 flex items-center justify-center gap-2 py-3 rounded-xl border text-sm font-semibold transition-all ${
                 taskType === "MAINTENANCE"
                   ? "bg-orange-500 text-white border-orange-500 shadow-sm"
-                  : "bg-white text-slate-500 border-slate-200 hover:border-orange-300"
+                  : "bg-white dark:bg-slate-700 text-slate-500 dark:text-slate-300 border-slate-200 dark:border-slate-600 hover:border-orange-300"
               }`}
             >
               🔧 תחזוקה
@@ -184,7 +184,7 @@ export default function NewTaskForm({ drivers }: { drivers: Driver[] }) {
         </div>
 
         {/* Basic fields */}
-        <div className="bg-white rounded-2xl shadow-sm border border-slate-100 p-6 space-y-5">
+        <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-700 p-6 space-y-5">
           <FormField label="כותרת המשימה" required>
             <input type="text" className={inputClass} placeholder="משלוח חבילה ל..." value={form.title} onChange={set("title")} required minLength={2} />
           </FormField>
@@ -201,10 +201,10 @@ export default function NewTaskForm({ drivers }: { drivers: Driver[] }) {
 
         {/* Delivery items — only for DELIVERY tasks */}
         {taskType === "DELIVERY" && (
-          <div className="bg-white rounded-2xl shadow-sm border border-slate-100 p-6 space-y-4">
+          <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-700 p-6 space-y-4">
             <div>
-              <h3 className="text-sm font-semibold text-slate-700">📦 פריטי משלוח</h3>
-              <p className="text-xs text-slate-400 mt-0.5">הוסף את הציוד שיש לספק</p>
+              <h3 className="text-sm font-semibold text-slate-700 dark:text-slate-200">📦 פריטי משלוח</h3>
+              <p className="text-xs text-slate-400 dark:text-slate-500 mt-0.5">הוסף את הציוד שיש לספק</p>
             </div>
 
             <datalist id="item-suggestions">
@@ -219,20 +219,20 @@ export default function NewTaskForm({ drivers }: { drivers: Driver[] }) {
                 value={newItemName}
                 onChange={(e) => setNewItemName(e.target.value)}
                 onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); addItem(); } }}
-                className="flex-1 border border-slate-200 rounded-xl px-3 py-2.5 text-sm bg-slate-50 focus:outline-none focus:ring-2 focus:ring-blue-300"
+                className="flex-1 border border-slate-200 dark:border-slate-600 rounded-xl px-3 py-2.5 text-sm bg-slate-50 dark:bg-slate-700 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-blue-300"
               />
               <input
                 type="number"
                 min={1}
                 value={newItemQty}
                 onChange={(e) => setNewItemQty(parseInt(e.target.value) || 1)}
-                className="w-20 border border-slate-200 rounded-xl px-3 py-2.5 text-sm bg-slate-50 text-center focus:outline-none focus:ring-2 focus:ring-blue-300"
+                className="w-20 border border-slate-200 dark:border-slate-600 rounded-xl px-3 py-2.5 text-sm bg-slate-50 dark:bg-slate-700 dark:text-slate-100 text-center focus:outline-none focus:ring-2 focus:ring-blue-300"
               />
               <button
                 type="button"
                 onClick={addItem}
                 disabled={!newItemName.trim()}
-                className="px-4 py-2.5 bg-blue-600 hover:bg-blue-700 disabled:bg-slate-300 text-white text-sm font-semibold rounded-xl transition-colors"
+                className="px-4 py-2.5 bg-blue-600 hover:bg-blue-700 disabled:bg-slate-300 dark:disabled:bg-slate-600 text-white text-sm font-semibold rounded-xl transition-colors"
               >
                 הוסף
               </button>
@@ -244,10 +244,10 @@ export default function NewTaskForm({ drivers }: { drivers: Driver[] }) {
                   const avail = getAvailable(item.name);
                   const over = avail !== null && item.quantity > avail;
                   return (
-                    <div key={item.name} className={`flex items-center justify-between px-4 py-2.5 rounded-xl border text-sm ${over ? "bg-red-50 border-red-200" : "bg-slate-50 border-slate-100"}`}>
-                      <span className="font-medium text-slate-700">{item.name}</span>
+                    <div key={item.name} className={`flex items-center justify-between px-4 py-2.5 rounded-xl border text-sm ${over ? "bg-red-50 border-red-200" : "bg-slate-50 dark:bg-slate-700 border-slate-100 dark:border-slate-600"}`}>
+                      <span className="font-medium text-slate-700 dark:text-slate-200">{item.name}</span>
                       <div className="flex items-center gap-3">
-                        <span className={`font-bold ${over ? "text-red-600" : "text-slate-800"}`}>{item.quantity}</span>
+                        <span className={`font-bold ${over ? "text-red-600" : "text-slate-800 dark:text-slate-100"}`}>{item.quantity}</span>
                         {over && <span className="text-xs text-red-500">⚠️ חורג ({avail} זמין)</span>}
                         <button type="button" onClick={() => removeItem(item.name)} className="text-slate-400 hover:text-red-500 text-xs">הסר</button>
                       </div>
@@ -256,7 +256,7 @@ export default function NewTaskForm({ drivers }: { drivers: Driver[] }) {
                 })}
               </div>
             ) : (
-              <p className="text-xs text-slate-400 text-center py-2">לא נוספו פריטים עדיין</p>
+              <p className="text-xs text-slate-400 dark:text-slate-500 text-center py-2">לא נוספו פריטים עדיין</p>
             )}
           </div>
         )}
@@ -277,12 +277,12 @@ export default function NewTaskForm({ drivers }: { drivers: Driver[] }) {
                 type="button"
                 onClick={() => setForm((prev) => ({ ...prev, assignedDriverId: rec.id }))}
                 className={`w-full text-right p-3 rounded-xl border transition-all ${
-                  form.assignedDriverId === rec.id ? "border-blue-400 bg-white shadow-sm" : "border-blue-200 bg-white/70 hover:bg-white"
+                  form.assignedDriverId === rec.id ? "border-blue-400 bg-white dark:bg-slate-700 shadow-sm" : "border-blue-200 dark:border-blue-800 bg-white/70 dark:bg-slate-700/50 hover:bg-white dark:hover:bg-slate-700"
                 }`}
               >
                 <div className="flex items-center justify-between gap-2">
                   <div className="flex items-center gap-2 flex-wrap">
-                    <span className="font-semibold text-slate-800 text-sm">{rec.name}</span>
+                    <span className="font-semibold text-slate-800 dark:text-slate-100 text-sm">{rec.name}</span>
                     {taskType === "DELIVERY" && items.length > 0 && rec.hasAllItems && (
                       <span className="text-xs bg-green-100 text-green-700 px-2 py-0.5 rounded-full">✅ יש כל הפריטים</span>
                     )}
@@ -290,7 +290,7 @@ export default function NewTaskForm({ drivers }: { drivers: Driver[] }) {
                       <span className="text-xs bg-yellow-100 text-yellow-700 px-2 py-0.5 rounded-full">⚠️ חסרים פריטים</span>
                     )}
                   </div>
-                  <span className="text-xs text-slate-400 shrink-0">
+                  <span className="text-xs text-slate-400 dark:text-slate-500 shrink-0">
                     {rec.distanceKm !== null ? `~${rec.distanceKm.toFixed(1)} ק"מ` : `${rec.openTaskCount} משימות`}
                   </span>
                 </div>
@@ -300,7 +300,7 @@ export default function NewTaskForm({ drivers }: { drivers: Driver[] }) {
         )}
 
         {/* Driver picker */}
-        <div className="bg-white rounded-2xl shadow-sm border border-slate-100 p-6">
+        <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-700 p-6">
           <FormField label="שבץ לנהג" required>
             <select className={inputClass} value={form.assignedDriverId} onChange={set("assignedDriverId")} required>
               <option value="">— בחר נהג —</option>

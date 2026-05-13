@@ -45,10 +45,10 @@ export default async function ManagerDashboard() {
     <div className="space-y-8">
       {/* Header */}
       <div>
-        <h1 className="text-2xl font-bold text-slate-800">
+        <h1 className="text-2xl font-bold text-slate-800 dark:text-slate-100">
           שלום, {session?.user.name} 👋
         </h1>
-        <p className="text-slate-500 mt-1 text-sm">סקירה כללית של המערכת</p>
+        <p className="text-slate-500 dark:text-slate-400 mt-1 text-sm">סקירה כללית של המערכת</p>
       </div>
 
       {/* Equipment alert */}
@@ -114,9 +114,9 @@ export default async function ManagerDashboard() {
       </div>
 
       {/* Recent tasks */}
-      <div className="bg-white rounded-2xl shadow-sm border border-slate-100">
-        <div className="flex items-center justify-between px-6 py-4 border-b border-slate-100">
-          <h2 className="font-semibold text-slate-800">משימות אחרונות</h2>
+      <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-700">
+        <div className="flex items-center justify-between px-6 py-4 border-b border-slate-100 dark:border-slate-700">
+          <h2 className="font-semibold text-slate-800 dark:text-slate-100">משימות אחרונות</h2>
           <Link
             href="/manager/tasks"
             className="text-sm text-blue-600 hover:text-blue-700 font-medium"
@@ -126,19 +126,19 @@ export default async function ManagerDashboard() {
         </div>
 
         {recentTasks.length === 0 ? (
-          <div className="px-6 py-12 text-center text-slate-400 text-sm">
+          <div className="px-6 py-12 text-center text-slate-400 dark:text-slate-500 text-sm">
             אין משימות עדיין
           </div>
         ) : (
-          <div className="divide-y divide-slate-50">
+          <div className="divide-y divide-slate-50 dark:divide-slate-700">
             {recentTasks.map((task) => (
               <div key={task.id} className="px-6 py-4 flex items-center justify-between gap-4">
                 <div className="min-w-0">
-                  <p className="font-medium text-slate-800 text-sm truncate">{task.title}</p>
-                  <p className="text-slate-400 text-xs mt-0.5 truncate">{task.deliveryAddress}</p>
+                  <p className="font-medium text-slate-800 dark:text-slate-100 text-sm truncate">{task.title}</p>
+                  <p className="text-slate-400 dark:text-slate-500 text-xs mt-0.5 truncate">{task.deliveryAddress}</p>
                 </div>
                 <div className="flex items-center gap-3 shrink-0">
-                  <span className="text-xs text-slate-500 hidden sm:block">
+                  <span className="text-xs text-slate-500 dark:text-slate-400 hidden sm:block">
                     {task.assignedDriver.name}
                   </span>
                   <span className={`text-xs font-medium px-2.5 py-1 rounded-full ${statusColor[task.status]}`}>
@@ -155,33 +155,33 @@ export default async function ManagerDashboard() {
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <Link
           href="/manager/drivers"
-          className="bg-white rounded-2xl border border-slate-100 shadow-sm p-6 flex items-center gap-4 hover:border-blue-200 hover:shadow-md transition-all group"
+          className="bg-white dark:bg-slate-800 rounded-2xl border border-slate-100 dark:border-slate-700 shadow-sm p-6 flex items-center gap-4 hover:border-blue-200 hover:shadow-md transition-all group"
         >
-          <div className="w-10 h-10 bg-blue-50 rounded-xl flex items-center justify-center group-hover:bg-blue-100 transition-colors">
-            <svg className="w-5 h-5 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <div className="w-10 h-10 bg-blue-50 dark:bg-blue-900/30 rounded-xl flex items-center justify-center group-hover:bg-blue-100 dark:group-hover:bg-blue-900/50 transition-colors">
+            <svg className="w-5 h-5 text-blue-600 dark:text-blue-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
                 d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
             </svg>
           </div>
           <div>
-            <p className="font-semibold text-slate-800">ניהול נהגים</p>
-            <p className="text-slate-400 text-xs mt-0.5">הוספה, עריכה, הסרה</p>
+            <p className="font-semibold text-slate-800 dark:text-slate-100">ניהול נהגים</p>
+            <p className="text-slate-400 dark:text-slate-500 text-xs mt-0.5">הוספה, עריכה, הסרה</p>
           </div>
         </Link>
 
         <Link
           href="/manager/tasks"
-          className="bg-white rounded-2xl border border-slate-100 shadow-sm p-6 flex items-center gap-4 hover:border-blue-200 hover:shadow-md transition-all group"
+          className="bg-white dark:bg-slate-800 rounded-2xl border border-slate-100 dark:border-slate-700 shadow-sm p-6 flex items-center gap-4 hover:border-blue-200 hover:shadow-md transition-all group"
         >
-          <div className="w-10 h-10 bg-green-50 rounded-xl flex items-center justify-center group-hover:bg-green-100 transition-colors">
-            <svg className="w-5 h-5 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <div className="w-10 h-10 bg-green-50 dark:bg-green-900/30 rounded-xl flex items-center justify-center group-hover:bg-green-100 dark:group-hover:bg-green-900/50 transition-colors">
+            <svg className="w-5 h-5 text-green-600 dark:text-green-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
                 d="M12 9v3m0 0v3m0-3h3m-3 0H9m12 0a9 9 0 11-18 0 9 9 0 0118 0z" />
             </svg>
           </div>
           <div>
-            <p className="font-semibold text-slate-800">הוספת משימה</p>
-            <p className="text-slate-400 text-xs mt-0.5">שיבוץ משימה לנהג</p>
+            <p className="font-semibold text-slate-800 dark:text-slate-100">הוספת משימה</p>
+            <p className="text-slate-400 dark:text-slate-500 text-xs mt-0.5">שיבוץ משימה לנהג</p>
           </div>
         </Link>
       </div>

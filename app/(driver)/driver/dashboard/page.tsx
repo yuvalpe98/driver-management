@@ -52,8 +52,8 @@ export default async function DriverDashboard() {
     <div className="space-y-6">
       {/* Header */}
       <div>
-        <h1 className="text-2xl font-bold text-slate-800">שלום, {session?.user.name} 👋</h1>
-        <p className="text-slate-500 text-sm mt-1">המשימות שהוקצו לך היום</p>
+        <h1 className="text-2xl font-bold text-slate-800 dark:text-slate-100">שלום, {session?.user.name} 👋</h1>
+        <p className="text-slate-500 dark:text-slate-400 text-sm mt-1">המשימות שהוקצו לך היום</p>
       </div>
 
       {/* Mini stats */}
@@ -84,7 +84,7 @@ export default async function DriverDashboard() {
             <Link
               key={task.id}
               href={`/driver/tasks/${task.id}`}
-              className="block bg-white rounded-2xl border border-slate-100 shadow-sm p-5 hover:border-blue-200 hover:shadow-md transition-all"
+              className="block bg-white dark:bg-slate-800 rounded-2xl border border-slate-100 dark:border-slate-700 shadow-sm p-5 hover:border-blue-200 hover:shadow-md transition-all"
             >
               <div className="flex items-start justify-between gap-3">
                 <div className="min-w-0">
@@ -94,8 +94,8 @@ export default async function DriverDashboard() {
                       {statusLabel[task.status]}
                     </span>
                   </div>
-                  <p className="font-semibold text-slate-800">{task.title}</p>
-                  <p className="text-slate-500 text-sm mt-1 flex items-center gap-1">
+                  <p className="font-semibold text-slate-800 dark:text-slate-100">{task.title}</p>
+                  <p className="text-slate-500 dark:text-slate-400 text-sm mt-1 flex items-center gap-1">
                     <svg className="w-3.5 h-3.5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
                         d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
@@ -130,12 +130,12 @@ export default async function DriverDashboard() {
             <Link
               key={task.id}
               href={`/driver/tasks/${task.id}`}
-              className="block bg-white rounded-2xl border border-slate-100 p-4 hover:bg-slate-50 transition-colors opacity-70"
+              className="block bg-white dark:bg-slate-800 rounded-2xl border border-slate-100 dark:border-slate-700 p-4 hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors opacity-70"
             >
               <div className="flex items-center justify-between gap-3">
                 <div className="min-w-0">
-                  <p className="font-medium text-slate-600 text-sm truncate">{task.title}</p>
-                  <p className="text-slate-400 text-xs mt-0.5 truncate">{task.deliveryAddress}</p>
+                  <p className="font-medium text-slate-600 dark:text-slate-300 text-sm truncate">{task.title}</p>
+                  <p className="text-slate-400 dark:text-slate-500 text-xs mt-0.5 truncate">{task.deliveryAddress}</p>
                 </div>
                 <span className={`text-xs font-medium px-2.5 py-1 rounded-full shrink-0 ${statusColor[task.status]}`}>
                   {statusLabel[task.status]}
@@ -147,10 +147,10 @@ export default async function DriverDashboard() {
       )}
 
       {tasks.length === 0 && (
-        <div className="bg-white rounded-2xl border border-slate-100 py-16 text-center">
+        <div className="bg-white dark:bg-slate-800 rounded-2xl border border-slate-100 dark:border-slate-700 py-16 text-center">
           <p className="text-4xl mb-3">📭</p>
-          <p className="text-slate-500 font-medium">אין משימות כרגע</p>
-          <p className="text-slate-400 text-sm mt-1">המנהל טרם שיבץ אותך למשימות</p>
+          <p className="text-slate-500 dark:text-slate-400 font-medium">אין משימות כרגע</p>
+          <p className="text-slate-400 dark:text-slate-500 text-sm mt-1">המנהל טרם שיבץ אותך למשימות</p>
         </div>
       )}
     </div>

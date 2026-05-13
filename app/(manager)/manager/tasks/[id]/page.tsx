@@ -60,11 +60,11 @@ export default async function ManagerTaskDetailPage({
         >
           ←
         </Link>
-        <h1 className="text-2xl font-bold text-slate-800">פרטי משימה</h1>
+        <h1 className="text-2xl font-bold text-slate-800 dark:text-slate-100">פרטי משימה</h1>
       </div>
 
       {/* Main card */}
-      <div className="bg-white rounded-2xl shadow-sm border border-slate-100 p-6 space-y-5">
+      <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-700 p-6 space-y-5">
         {/* Status + cancel */}
         <div className="flex items-center justify-between gap-4">
           <div className="flex items-center gap-2">
@@ -87,7 +87,7 @@ export default async function ManagerTaskDetailPage({
         </div>
 
         {/* Details grid */}
-        <div className="space-y-3 pt-2 border-t border-slate-50">
+        <div className="space-y-3 pt-2 border-t border-slate-50 dark:border-slate-700">
           <DetailRow icon="📍" label="כתובת מסירה" value={task.deliveryAddress} />
           <DetailRow
             icon="👤"
@@ -121,13 +121,13 @@ export default async function ManagerTaskDetailPage({
 
       {/* Delivery items */}
       {task.items.length > 0 && (
-        <div className="bg-white rounded-2xl shadow-sm border border-slate-100 p-6 space-y-3">
-          <h3 className="text-sm font-semibold text-slate-700">📦 פריטי משלוח</h3>
-          <div className="divide-y divide-slate-50">
+        <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-700 p-6 space-y-3">
+          <h3 className="text-sm font-semibold text-slate-700 dark:text-slate-200">📦 פריטי משלוח</h3>
+          <div className="divide-y divide-slate-50 dark:divide-slate-700">
             {task.items.map((item) => (
               <div key={item.name} className="flex items-center justify-between py-2.5 text-sm">
-                <span className="text-slate-700 font-medium">{item.name}</span>
-                <span className="font-bold text-slate-800">{item.quantity}</span>
+                <span className="text-slate-700 dark:text-slate-200 font-medium">{item.name}</span>
+                <span className="font-bold text-slate-800 dark:text-slate-100">{item.quantity}</span>
               </div>
             ))}
           </div>
@@ -195,8 +195,8 @@ function DetailRow({
     <div className="flex items-start gap-3">
       <span className="text-lg mt-0.5">{icon}</span>
       <div>
-        <p className="text-xs text-slate-400 font-medium">{label}</p>
-        <div className="text-slate-800 font-medium mt-0.5 text-sm">{value}</div>
+        <p className="text-xs text-slate-400 dark:text-slate-500 font-medium">{label}</p>
+        <div className="text-slate-800 dark:text-slate-100 font-medium mt-0.5 text-sm">{value}</div>
       </div>
     </div>
   );
