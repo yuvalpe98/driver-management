@@ -35,10 +35,11 @@ model User {
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
 
-  assignedTasks Task[]      @relation("DriverTasks")
-  createdTasks  Task[]      @relation("ManagerTasks")
+  assignedTasks Task[]          @relation("DriverTasks")
+  createdTasks  Task[]          @relation("ManagerTasks")
   auditLogs     AuditLog[]
   equipment     Equipment[]
+  inventory     InventoryItem[] @relation("DriverInventory")
 }
 
 model Task {
@@ -59,6 +60,7 @@ model Task {
   createdByManager   User       @relation("ManagerTasks", fields: [createdByManagerId], references: [id])
 
   completion         TaskCompletion?
+  items              TaskItem[]
 
   @@index([assignedDriverId])
   @@index([status])
@@ -73,6 +75,32 @@ model TaskCompletion {
 
   taskId            String   @unique
   task              Task     @relation(fields: [taskId], references: [id])
+}
+
+model TaskItem {
+  id       String @id @default(uuid())
+  name     String
+  quantity Int
+
+  taskId   String
+  task     Task   @relation(fields: [taskId], references: [id])
+
+  @@index([taskId])
+}
+
+model InventoryItem {
+  id        String   @id @default(uuid())
+  name      String
+  quantity  Int      @default(0)
+  unit      String   @default("יחידות")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  driverId  String
+  driver    User     @relation("DriverInventory", fields: [driverId], references: [id])
+
+  @@unique([driverId, name])
+  @@index([driverId])
 }
 
 model Equipment {

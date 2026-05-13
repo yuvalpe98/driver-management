@@ -37,6 +37,7 @@ export default async function DriverTaskPage({ params }: { params: Promise<{ id:
       completion: {
         select: { recipientName: true, completedAt: true },
       },
+      items: { select: { name: true, quantity: true } },
     },
   });
 
@@ -128,6 +129,21 @@ export default async function DriverTaskPage({ params }: { params: Promise<{ id:
             </div>
           </div>
         </div>
+
+        {/* Delivery items */}
+        {task.items.length > 0 && (
+          <div className="pt-2 border-t border-slate-50 space-y-2">
+            <p className="text-xs text-slate-400 font-medium">📦 פריטי משלוח</p>
+            <div className="space-y-1.5">
+              {task.items.map((item) => (
+                <div key={item.name} className="flex items-center justify-between bg-slate-50 rounded-xl px-4 py-2.5 text-sm">
+                  <span className="text-slate-700 font-medium">{item.name}</span>
+                  <span className="font-bold text-slate-800">{item.quantity}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
 
         {/* Completion summary */}
         {isCompleted && task.completion && (

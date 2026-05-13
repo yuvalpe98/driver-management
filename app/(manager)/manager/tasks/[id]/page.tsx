@@ -41,6 +41,7 @@ export default async function ManagerTaskDetailPage({
       completion: {
         select: { recipientName: true, signatureImageUrl: true, completedAt: true },
       },
+      items: { select: { name: true, quantity: true } },
     },
   });
 
@@ -111,6 +112,21 @@ export default async function ManagerTaskDetailPage({
           )}
         </div>
       </div>
+
+      {/* Delivery items */}
+      {task.items.length > 0 && (
+        <div className="bg-white rounded-2xl shadow-sm border border-slate-100 p-6 space-y-3">
+          <h3 className="text-sm font-semibold text-slate-700">📦 פריטי משלוח</h3>
+          <div className="divide-y divide-slate-50">
+            {task.items.map((item) => (
+              <div key={item.name} className="flex items-center justify-between py-2.5 text-sm">
+                <span className="text-slate-700 font-medium">{item.name}</span>
+                <span className="font-bold text-slate-800">{item.quantity}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
 
       {/* Completion proof */}
       {task.status === "COMPLETED" && task.completion && (

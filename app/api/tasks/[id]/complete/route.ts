@@ -49,7 +49,10 @@ export async function POST(
 
   const now = new Date();
 
-  // Single atomic transaction: task completion + equipment status updates
+  // Fetch task items before the transaction
+  const taskItems = await prisma.taskItem.findMany({ where: { taskId: id } });
+
+  // Single atomic transaction: task completion + equipment status updates + inventory deduction
   await prisma.$transaction([
     prisma.taskCompletion.create({
       data: { taskId: id, recipientName, signatureImageUrl, completedAt: now },
@@ -58,11 +61,17 @@ export async function POST(
       where: { id },
       data: { status: "COMPLETED", completedAt: now },
     }),
-    // Apply each equipment status update the driver submitted
     ...(equipmentUpdates ?? []).map((eq) =>
       prisma.equipment.update({
         where: { id: eq.id },
         data: { status: eq.status },
+      })
+    ),
+    // Deduct each delivered item from driver's inventory (best-effort: floor at 0)
+    ...taskItems.map((item) =>
+      prisma.inventoryItem.updateMany({
+        where: { driverId, name: item.name, quantity: { gte: item.quantity } },
+        data: { quantity: { decrement: item.quantity } },
       })
     ),
   ]);

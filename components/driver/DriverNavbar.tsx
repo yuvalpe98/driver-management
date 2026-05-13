@@ -7,6 +7,7 @@ import { usePathname } from "next/navigation";
 const links = [
   { href: "/driver/dashboard", label: "משימות" },
   { href: "/driver/equipment", label: "ציוד" },
+  { href: "/driver/inventory", label: "מלאי" },
 ];
 
 interface DriverNavbarProps {
