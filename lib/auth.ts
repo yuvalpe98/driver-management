@@ -6,6 +6,7 @@ import { loginSchema } from "@/lib/validations";
 import { Role } from "@prisma/client";
 
 export const { handlers, auth, signIn, signOut } = NextAuth({
+  trustHost: true,
   providers: [
     Credentials({
       async authorize(credentials) {
