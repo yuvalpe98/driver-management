@@ -15,8 +15,8 @@ export default async function DriverInventoryPage() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-bold text-slate-800">המלאי שלי</h1>
-        <p className="text-slate-500 text-sm mt-1">פריטי ציוד ברכב שלך — {items.length} פריטים</p>
+        <h1 className="text-2xl font-bold text-slate-800 dark:text-slate-100">המלאי שלי</h1>
+        <p className="text-slate-500 dark:text-slate-400 text-sm mt-1">פריטי ציוד ברכב שלך — {items.length} פריטים</p>
       </div>
       <DriverInventoryManager initialItems={items} />
     </div>

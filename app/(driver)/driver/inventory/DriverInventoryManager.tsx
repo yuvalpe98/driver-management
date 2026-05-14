@@ -45,20 +45,24 @@ export default function DriverInventoryManager({ initialItems }: { initialItems:
 
   async function handleUpdateQty(id: string) {
     setLoading(true);
-    await fetch(`/api/inventory/${id}`, {
+    setError("");
+    const res = await fetch(`/api/inventory/${id}`, {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ quantity: editQty }),
     });
     setLoading(false);
+    if (!res.ok) { setError("שגיאה בעדכון הכמות"); return; }
     setEditingId(null);
     setItems((prev) => prev.map((i) => (i.id === id ? { ...i, quantity: editQty } : i)));
   }
 
   async function handleDelete(id: string) {
     setLoading(true);
-    await fetch(`/api/inventory/${id}`, { method: "DELETE" });
+    setError("");
+    const res = await fetch(`/api/inventory/${id}`, { method: "DELETE" });
     setLoading(false);
+    if (!res.ok) { setError("שגיאה במחיקת הפריט"); return; }
     setItems((prev) => prev.filter((i) => i.id !== id));
   }
 
@@ -71,6 +75,10 @@ export default function DriverInventoryManager({ initialItems }: { initialItems:
         <div className="bg-red-50 border border-red-200 rounded-2xl px-4 py-3 text-sm text-red-700 font-medium">
           ⚠️ {lowCount} פריטים במלאי נמוך — עדכן את המנהל
         </div>
+      )}
+
+      {error && !adding && (
+        <div className="bg-red-50 border border-red-200 rounded-xl px-4 py-2.5 text-sm text-red-700">{error}</div>
       )}
 
       {/* Item list */}

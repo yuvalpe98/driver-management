@@ -44,6 +44,18 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
 
   // If toggling isActive only (legacy behavior from ToggleDriverButton)
   if (isActive !== undefined && !name && !email && !phone && !password) {
+    // Block deactivation when driver has open tasks
+    if (isActive === false) {
+      const openCount = await prisma.task.count({
+        where: { assignedDriverId: id, status: { in: ["PENDING", "IN_PROGRESS"] } },
+      });
+      if (openCount > 0) {
+        return NextResponse.json(
+          { error: `לנהג יש ${openCount} משימות פתוחות. יש לסגור אותן לפני השבתת הנהג.` },
+          { status: 409 }
+        );
+      }
+    }
     const updated = await prisma.user.update({
       where: { id },
       data: { isActive },

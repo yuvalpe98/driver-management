@@ -24,12 +24,13 @@ export const createTaskSchema = z.object({
   assignedDriverId: z.string().uuid(),
   scheduledFor: z.string().datetime().optional(),
   taskType: z.enum(["DELIVERY", "MAINTENANCE"]).optional().default("DELIVERY"),
+  priority: z.enum(["URGENT", "NORMAL", "LOW"]).optional().default("NORMAL"),
   items: z.array(createTaskItemSchema).optional(),
 });
 
 export const completeTaskSchema = z.object({
   recipientName: z.string().min(2).max(100),
-  signatureBase64: z.string().min(1),
+  signatureBase64: z.string().min(1).max(500_000),
   equipmentUpdates: z
     .array(
       z.object({

@@ -4,6 +4,7 @@ import { signOut } from "next-auth/react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import DarkModeToggle from "@/components/ui/DarkModeToggle";
+import NotificationToggle from "@/components/ui/NotificationToggle";
 
 const links = [
   { href: "/driver/dashboard", label: "משימות" },
@@ -49,6 +50,7 @@ export default function DriverNavbar({ userName }: DriverNavbarProps) {
 
           {/* User + toggle + logout */}
           <div className="flex items-center gap-2">
+            <NotificationToggle />
             <DarkModeToggle />
             <div className="flex items-center gap-2">
               <div className="w-8 h-8 bg-blue-100 dark:bg-blue-900/50 rounded-full flex items-center justify-center">

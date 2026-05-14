@@ -11,6 +11,7 @@ const heebo = Heebo({
 export const metadata: Metadata = {
   title: "מערכת ניהול נהגים",
   description: "מערכת לניהול נהגים ומשימות",
+  manifest: "/manifest.json",
 };
 
 export default function RootLayout({

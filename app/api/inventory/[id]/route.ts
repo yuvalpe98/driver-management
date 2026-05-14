@@ -1,6 +1,7 @@
 import { requireAuth } from "@/lib/auth-guard";
 import { prisma } from "@/lib/prisma";
 import { updateInventoryItemSchema } from "@/lib/validations";
+import { sendPush } from "@/lib/push";
 import { NextResponse } from "next/server";
 
 async function resolveItem(id: string, userId: string, role: string) {
@@ -30,6 +31,21 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
       ...(parsed.data.unit !== undefined && { unit: parsed.data.unit }),
     },
   });
+
+  // Notify all managers if quantity dropped to low-stock threshold
+  if (parsed.data.quantity !== undefined && parsed.data.quantity <= 2) {
+    const managers = await prisma.user.findMany({
+      where: { role: "MANAGER", isActive: true },
+      select: { id: true },
+    });
+    managers.forEach((m) =>
+      sendPush(m.id, {
+        title: "מלאי נמוך",
+        body: `${updated.name} — נותרו ${updated.quantity} יחידות`,
+        url: "/manager/inventory",
+      }).catch(() => {})
+    );
+  }
 
   return NextResponse.json(updated);
 }

@@ -15,6 +15,14 @@ const statusColor: Record<string, string> = {
   CANCELLED:   "bg-slate-100 text-slate-500",
 };
 
+const priorityConfig: Record<"URGENT" | "NORMAL" | "LOW", { label: string; color: string }> = {
+  URGENT: { label: "דחוף", color: "bg-red-100 text-red-700" },
+  NORMAL: { label: "רגיל", color: "bg-blue-100 text-blue-700" },
+  LOW:    { label: "נמוך", color: "bg-slate-100 text-slate-500" },
+};
+
+const priorityRank: Record<"URGENT" | "NORMAL" | "LOW", number> = { URGENT: 0, NORMAL: 1, LOW: 2 };
+
 export default async function TasksPage() {
   const tasks = await prisma.task.findMany({
     orderBy: { createdAt: "desc" },
@@ -24,10 +32,18 @@ export default async function TasksPage() {
       deliveryAddress: true,
       status: true,
       taskType: true,
+      priority: true,
       scheduledFor: true,
       createdAt: true,
       assignedDriver: { select: { name: true } },
     },
+  });
+
+  // Sort: URGENT first, then by createdAt desc
+  tasks.sort((a, b) => {
+    const pd = priorityRank[a.priority] - priorityRank[b.priority];
+    if (pd !== 0) return pd;
+    return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
   });
 
   return (
@@ -58,6 +74,7 @@ export default async function TasksPage() {
             <thead>
               <tr className="border-b border-slate-100 dark:border-slate-700 bg-slate-50 dark:bg-slate-700/50 text-slate-500 dark:text-slate-400 text-xs uppercase tracking-wide">
                 <th className="text-right px-6 py-3 font-medium">משימה</th>
+                <th className="text-right px-6 py-3 font-medium hidden sm:table-cell">עדיפות</th>
                 <th className="text-right px-6 py-3 font-medium hidden md:table-cell">כתובת</th>
                 <th className="text-right px-6 py-3 font-medium hidden sm:table-cell">נהג</th>
                 <th className="text-right px-6 py-3 font-medium hidden lg:table-cell">תאריך יצירה</th>
@@ -66,38 +83,46 @@ export default async function TasksPage() {
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-50 dark:divide-slate-700">
-              {tasks.map((task) => (
-                <tr key={task.id} className="hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors">
-                  <td className="px-6 py-4">
-                    <div className="flex items-center gap-2">
-                      <span>{task.taskType === "DELIVERY" ? "📦" : "🔧"}</span>
-                      <p className="font-medium text-slate-800 dark:text-slate-100 truncate max-w-[160px]">{task.title}</p>
-                    </div>
-                  </td>
-                  <td className="px-6 py-4 text-slate-500 dark:text-slate-400 hidden md:table-cell">
-                    <p className="truncate max-w-[200px]">{task.deliveryAddress}</p>
-                  </td>
-                  <td className="px-6 py-4 hidden sm:table-cell">
-                    <span className="text-slate-700 dark:text-slate-300">{task.assignedDriver.name}</span>
-                  </td>
-                  <td className="px-6 py-4 text-slate-400 dark:text-slate-500 text-xs hidden lg:table-cell">
-                    {new Date(task.createdAt).toLocaleDateString("he-IL")}
-                  </td>
-                  <td className="px-6 py-4">
-                    <span className={`text-xs font-medium px-2.5 py-1 rounded-full ${statusColor[task.status]}`}>
-                      {statusLabel[task.status]}
-                    </span>
-                  </td>
-                  <td className="px-6 py-4">
-                    <Link
-                      href={`/manager/tasks/${task.id}`}
-                      className="text-blue-600 hover:text-blue-700 font-medium text-xs"
-                    >
-                      פרטים
-                    </Link>
-                  </td>
-                </tr>
-              ))}
+              {tasks.map((task) => {
+                const pc = priorityConfig[task.priority];
+                return (
+                  <tr key={task.id} className="hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors">
+                    <td className="px-6 py-4">
+                      <div className="flex items-center gap-2">
+                        <span>{task.taskType === "DELIVERY" ? "📦" : "🔧"}</span>
+                        <p className="font-medium text-slate-800 dark:text-slate-100 truncate max-w-[160px]">{task.title}</p>
+                      </div>
+                    </td>
+                    <td className="px-6 py-4 hidden sm:table-cell">
+                      <span className={`text-xs font-medium px-2.5 py-1 rounded-full ${pc.color}`}>
+                        {pc.label}
+                      </span>
+                    </td>
+                    <td className="px-6 py-4 text-slate-500 dark:text-slate-400 hidden md:table-cell">
+                      <p className="truncate max-w-[200px]">{task.deliveryAddress}</p>
+                    </td>
+                    <td className="px-6 py-4 hidden sm:table-cell">
+                      <span className="text-slate-700 dark:text-slate-300">{task.assignedDriver.name}</span>
+                    </td>
+                    <td className="px-6 py-4 text-slate-400 dark:text-slate-500 text-xs hidden lg:table-cell">
+                      {new Date(task.createdAt).toLocaleDateString("he-IL")}
+                    </td>
+                    <td className="px-6 py-4">
+                      <span className={`text-xs font-medium px-2.5 py-1 rounded-full ${statusColor[task.status]}`}>
+                        {statusLabel[task.status]}
+                      </span>
+                    </td>
+                    <td className="px-6 py-4">
+                      <Link
+                        href={`/manager/tasks/${task.id}`}
+                        className="text-blue-600 hover:text-blue-700 font-medium text-xs"
+                      >
+                        פרטים
+                      </Link>
+                    </td>
+                  </tr>
+                );
+              })}
             </tbody>
           </table>
         )}

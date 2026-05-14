@@ -119,9 +119,9 @@ export default function EquipmentList({ initialItems }: { initialItems: Equipmen
       </div>
 
       {/* Equipment list */}
-      <div className="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden">
-        <div className="flex items-center justify-between px-5 py-4 border-b border-slate-100">
-          <h2 className="font-semibold text-slate-800">פריטי ציוד ({items.length})</h2>
+      <div className="bg-white dark:bg-slate-800 rounded-2xl border border-slate-100 dark:border-slate-700 shadow-sm overflow-hidden">
+        <div className="flex items-center justify-between px-5 py-4 border-b border-slate-100 dark:border-slate-700">
+          <h2 className="font-semibold text-slate-800 dark:text-slate-100">פריטי ציוד ({items.length})</h2>
           <button
             onClick={() => setShowAdd((v) => !v)}
             className="text-sm text-blue-600 hover:text-blue-700 font-medium flex items-center gap-1"
@@ -132,13 +132,13 @@ export default function EquipmentList({ initialItems }: { initialItems: Equipmen
 
         {/* Add form */}
         {showAdd && (
-          <form onSubmit={handleAdd} className="px-5 py-3 border-b border-slate-100 bg-slate-50 flex gap-2">
+          <form onSubmit={handleAdd} className="px-5 py-3 border-b border-slate-100 dark:border-slate-700 bg-slate-50 dark:bg-slate-700/50 flex gap-2">
             <input
               type="text"
               value={newName}
               onChange={(e) => setNewName(e.target.value)}
               placeholder="שם הציוד החדש..."
-              className="flex-1 px-3 py-2 rounded-lg border border-slate-200 bg-white text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="flex-1 px-3 py-2 rounded-lg border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-700 dark:text-slate-100 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
               required
               minLength={2}
             />
@@ -154,14 +154,14 @@ export default function EquipmentList({ initialItems }: { initialItems: Equipmen
         )}
 
         {items.length === 0 ? (
-          <div className="py-12 text-center text-slate-400 text-sm">אין פריטי ציוד ברשימה</div>
+          <div className="py-12 text-center text-slate-400 dark:text-slate-500 text-sm">אין פריטי ציוד ברשימה</div>
         ) : (
-          <ul className="divide-y divide-slate-50">
+          <ul className="divide-y divide-slate-50 dark:divide-slate-700">
             {items.map((item) => (
               <li key={item.id} className="px-5 py-4 flex items-center justify-between gap-3">
                 <div className="min-w-0">
-                  <p className="font-medium text-slate-800 text-sm">{item.name}</p>
-                  {item.notes && <p className="text-slate-400 text-xs mt-0.5">{item.notes}</p>}
+                  <p className="font-medium text-slate-800 dark:text-slate-100 text-sm">{item.name}</p>
+                  {item.notes && <p className="text-slate-400 dark:text-slate-500 text-xs mt-0.5">{item.notes}</p>}
                 </div>
                 <div className="flex items-center gap-2 shrink-0">
                   <StatusButton
@@ -186,7 +186,7 @@ export default function EquipmentList({ initialItems }: { initialItems: Equipmen
         )}
       </div>
 
-      <p className="text-xs text-slate-400 text-center">
+      <p className="text-xs text-slate-400 dark:text-slate-500 text-center">
         לחץ על הסטטוס כדי לשנות: תקין → דורש תיקון → חסר
       </p>
     </div>

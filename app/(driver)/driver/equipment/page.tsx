@@ -15,8 +15,8 @@ export default async function DriverEquipmentPage() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-bold text-slate-800">הציוד שלי</h1>
-        <p className="text-slate-500 text-sm mt-1">עדכן את סטטוס הציוד שברשותך</p>
+        <h1 className="text-2xl font-bold text-slate-800 dark:text-slate-100">הציוד שלי</h1>
+        <p className="text-slate-500 dark:text-slate-400 text-sm mt-1">עדכן את סטטוס הציוד שברשותך</p>
       </div>
 
       <EquipmentList initialItems={equipment} />

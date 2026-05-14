@@ -4,6 +4,7 @@ import { signOut } from "next-auth/react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import DarkModeToggle from "@/components/ui/DarkModeToggle";
+import NotificationToggle from "@/components/ui/NotificationToggle";
 
 const links = [
   { href: "/manager/dashboard", label: "לוח בקרה" },
@@ -54,6 +55,7 @@ export default function Navbar({ userName }: NavbarProps) {
 
           {/* User + toggle + logout */}
           <div className="flex items-center gap-2">
+            <NotificationToggle />
             <DarkModeToggle />
             <div className="flex items-center gap-2">
               <div className="w-8 h-8 bg-slate-200 dark:bg-slate-600 rounded-full flex items-center justify-center">

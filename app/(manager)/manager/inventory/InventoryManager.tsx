@@ -49,25 +49,32 @@ export default function InventoryManager({ driverId, initialItems }: Props) {
 
   async function handleUpdateQty(id: string) {
     setLoading(true);
-    await fetch(`/api/inventory/${id}`, {
+    setError("");
+    const res = await fetch(`/api/inventory/${id}`, {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ quantity: editQty }),
     });
     setLoading(false);
+    if (!res.ok) { setError("שגיאה בעדכון הכמות"); return; }
     setEditingId(null);
     setItems((prev) => prev.map((i) => (i.id === id ? { ...i, quantity: editQty } : i)));
   }
 
   async function handleDelete(id: string) {
     setLoading(true);
-    await fetch(`/api/inventory/${id}`, { method: "DELETE" });
+    setError("");
+    const res = await fetch(`/api/inventory/${id}`, { method: "DELETE" });
     setLoading(false);
+    if (!res.ok) { setError("שגיאה במחיקת הפריט"); return; }
     setItems((prev) => prev.filter((i) => i.id !== id));
   }
 
   return (
     <div className="space-y-3">
+      {error && !adding && (
+        <p className="text-red-500 text-xs">{error}</p>
+      )}
       {items.length === 0 && !adding && (
         <p className="text-slate-400 text-sm text-center py-4">אין פריטים במלאי</p>
       )}

@@ -18,6 +18,12 @@ const statusColor: Record<string, string> = {
   CANCELLED:   "bg-slate-100 text-slate-500 border-slate-200",
 };
 
+const priorityConfig: Record<"URGENT" | "NORMAL" | "LOW", { label: string; color: string }> = {
+  URGENT: { label: "🔴 דחוף", color: "bg-red-100 text-red-700 border-red-200" },
+  NORMAL: { label: "🔵 רגיל", color: "bg-blue-100 text-blue-700 border-blue-200" },
+  LOW:    { label: "⚪ נמוך",  color: "bg-slate-100 text-slate-600 border-slate-200" },
+};
+
 export default async function ManagerTaskDetailPage({
   params,
 }: {
@@ -34,6 +40,7 @@ export default async function ManagerTaskDetailPage({
       deliveryAddress: true,
       status: true,
       taskType: true,
+      priority: true,
       scheduledFor: true,
       completedAt: true,
       createdAt: true,
@@ -67,12 +74,15 @@ export default async function ManagerTaskDetailPage({
       <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-700 p-6 space-y-5">
         {/* Status + cancel */}
         <div className="flex items-center justify-between gap-4">
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 flex-wrap">
             <span className={`inline-flex items-center text-sm font-semibold px-3 py-1.5 rounded-full border ${statusColor[task.status]}`}>
               {statusLabel[task.status]}
             </span>
             <span className={`inline-flex items-center text-xs font-semibold px-3 py-1.5 rounded-full border ${task.taskType === "DELIVERY" ? "bg-blue-50 text-blue-700 border-blue-200" : "bg-orange-50 text-orange-700 border-orange-200"}`}>
               {task.taskType === "DELIVERY" ? "📦 משלוח" : "🔧 תחזוקה"}
+            </span>
+            <span className={`inline-flex items-center text-xs font-semibold px-3 py-1.5 rounded-full border ${priorityConfig[task.priority].color}`}>
+              {priorityConfig[task.priority].label}
             </span>
           </div>
           {canCancel && <CancelTaskButton taskId={task.id} />}

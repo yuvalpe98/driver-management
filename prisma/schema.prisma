@@ -29,6 +29,12 @@ enum TaskType {
   MAINTENANCE
 }
 
+enum TaskPriority {
+  URGENT
+  NORMAL
+  LOW
+}
+
 model User {
   id           String   @id @default(uuid())
   name         String
@@ -40,24 +46,26 @@ model User {
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
 
-  assignedTasks Task[]          @relation("DriverTasks")
-  createdTasks  Task[]          @relation("ManagerTasks")
-  auditLogs     AuditLog[]
-  equipment     Equipment[]
-  inventory     InventoryItem[] @relation("DriverInventory")
+  assignedTasks     Task[]             @relation("DriverTasks")
+  createdTasks      Task[]             @relation("ManagerTasks")
+  auditLogs         AuditLog[]
+  equipment         Equipment[]
+  inventory         InventoryItem[]    @relation("DriverInventory")
+  pushSubscriptions PushSubscription[]
 }
 
 model Task {
-  id                 String     @id @default(uuid())
+  id                 String       @id @default(uuid())
   title              String
   description        String?
   deliveryAddress    String
-  status             TaskStatus @default(PENDING)
-  taskType           TaskType   @default(DELIVERY)
+  status             TaskStatus   @default(PENDING)
+  taskType           TaskType     @default(DELIVERY)
+  priority           TaskPriority @default(NORMAL)
   scheduledFor       DateTime?
   completedAt        DateTime?
-  createdAt          DateTime   @default(now())
-  updatedAt          DateTime   @updatedAt
+  createdAt          DateTime     @default(now())
+  updatedAt          DateTime     @updatedAt
 
   assignedDriverId   String
   assignedDriver     User       @relation("DriverTasks", fields: [assignedDriverId], references: [id])
@@ -137,4 +145,16 @@ model AuditLog {
 
   @@index([userId])
   @@index([entityType, entityId])
+}
+
+model PushSubscription {
+  id       String @id @default(uuid())
+  endpoint String @unique
+  p256dh   String
+  auth     String
+
+  userId   String
+  user     User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
 }

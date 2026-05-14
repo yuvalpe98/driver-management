@@ -2,6 +2,7 @@ import { requireRole } from "@/lib/auth-guard";
 import { prisma } from "@/lib/prisma";
 import { completeTaskSchema } from "@/lib/validations";
 import { uploadSignature } from "@/lib/cloudinary";
+import { sendPush } from "@/lib/push";
 import { NextResponse } from "next/server";
 
 export async function POST(
@@ -16,7 +17,7 @@ export async function POST(
 
   const task = await prisma.task.findUnique({
     where: { id, assignedDriverId: driverId },
-    select: { id: true, status: true },
+    select: { id: true, title: true, status: true, createdByManagerId: true },
   });
 
   if (!task) return NextResponse.json({ error: "המשימה לא נמצאה" }, { status: 404 });
@@ -75,6 +76,13 @@ export async function POST(
       })
     ),
   ]);
+
+  // Notify the manager who created this task — fire-and-forget
+  sendPush(task.createdByManagerId, {
+    title: "משימה הושלמה",
+    body: `${task.title} — נמסר ל${recipientName}`,
+    url: `/manager/tasks/${id}`,
+  }).catch(() => {});
 
   return NextResponse.json({ success: true });
 }

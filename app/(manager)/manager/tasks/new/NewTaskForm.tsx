@@ -17,12 +17,20 @@ interface RecommendedDriver {
 }
 
 type TaskType = "DELIVERY" | "MAINTENANCE";
+type TaskPriority = "URGENT" | "NORMAL" | "LOW";
+
+const priorityOptions: { value: TaskPriority; label: string; active: string; inactive: string }[] = [
+  { value: "URGENT", label: "🔴 דחוף", active: "bg-red-600 text-white border-red-600 shadow-sm", inactive: "bg-white dark:bg-slate-700 text-slate-500 dark:text-slate-300 border-slate-200 dark:border-slate-600 hover:border-red-300" },
+  { value: "NORMAL", label: "🔵 רגיל", active: "bg-blue-600 text-white border-blue-600 shadow-sm", inactive: "bg-white dark:bg-slate-700 text-slate-500 dark:text-slate-300 border-slate-200 dark:border-slate-600 hover:border-blue-300" },
+  { value: "LOW",    label: "⚪ נמוך",  active: "bg-slate-500 text-white border-slate-500 shadow-sm", inactive: "bg-white dark:bg-slate-700 text-slate-500 dark:text-slate-300 border-slate-200 dark:border-slate-600 hover:border-slate-400" },
+];
 
 export default function NewTaskForm({ drivers }: { drivers: Driver[] }) {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [taskType, setTaskType] = useState<TaskType>("DELIVERY");
+  const [priority, setPriority] = useState<TaskPriority>("NORMAL");
   const [form, setForm] = useState({
     title: "",
     description: "",
@@ -77,6 +85,7 @@ export default function NewTaskForm({ drivers }: { drivers: Driver[] }) {
       if (itemsParam) params.set("items", itemsParam);
       try {
         const res = await fetch(`/api/drivers/recommend?${params}`);
+        if (!res.ok) { setRecommendations([]); return; }
         const data = await res.json();
         setRecommendations(Array.isArray(data) ? data : []);
       } catch {
@@ -122,6 +131,7 @@ export default function NewTaskForm({ drivers }: { drivers: Driver[] }) {
       body: JSON.stringify({
         ...form,
         taskType,
+        priority,
         scheduledFor: form.scheduledFor ? new Date(form.scheduledFor).toISOString() : undefined,
         items: taskType === "DELIVERY" && items.length > 0 ? items : undefined,
       }),
@@ -155,31 +165,51 @@ export default function NewTaskForm({ drivers }: { drivers: Driver[] }) {
       <form onSubmit={handleSubmit} className="space-y-5">
 
         {/* Task type toggle */}
-        <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-700 p-4">
-          <p className="text-xs text-slate-400 dark:text-slate-500 font-medium mb-3">סוג משימה</p>
-          <div className="flex gap-2">
-            <button
-              type="button"
-              onClick={() => setTaskType("DELIVERY")}
-              className={`flex-1 flex items-center justify-center gap-2 py-3 rounded-xl border text-sm font-semibold transition-all ${
-                taskType === "DELIVERY"
-                  ? "bg-blue-600 text-white border-blue-600 shadow-sm"
-                  : "bg-white dark:bg-slate-700 text-slate-500 dark:text-slate-300 border-slate-200 dark:border-slate-600 hover:border-blue-300"
-              }`}
-            >
-              📦 משלוח
-            </button>
-            <button
-              type="button"
-              onClick={() => { setTaskType("MAINTENANCE"); setItems([]); }}
-              className={`flex-1 flex items-center justify-center gap-2 py-3 rounded-xl border text-sm font-semibold transition-all ${
-                taskType === "MAINTENANCE"
-                  ? "bg-orange-500 text-white border-orange-500 shadow-sm"
-                  : "bg-white dark:bg-slate-700 text-slate-500 dark:text-slate-300 border-slate-200 dark:border-slate-600 hover:border-orange-300"
-              }`}
-            >
-              🔧 תחזוקה
-            </button>
+        <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-700 p-4 space-y-4">
+          <div>
+            <p className="text-xs text-slate-400 dark:text-slate-500 font-medium mb-3">סוג משימה</p>
+            <div className="flex gap-2">
+              <button
+                type="button"
+                onClick={() => setTaskType("DELIVERY")}
+                className={`flex-1 flex items-center justify-center gap-2 py-3 rounded-xl border text-sm font-semibold transition-all ${
+                  taskType === "DELIVERY"
+                    ? "bg-blue-600 text-white border-blue-600 shadow-sm"
+                    : "bg-white dark:bg-slate-700 text-slate-500 dark:text-slate-300 border-slate-200 dark:border-slate-600 hover:border-blue-300"
+                }`}
+              >
+                📦 משלוח
+              </button>
+              <button
+                type="button"
+                onClick={() => { setTaskType("MAINTENANCE"); setItems([]); }}
+                className={`flex-1 flex items-center justify-center gap-2 py-3 rounded-xl border text-sm font-semibold transition-all ${
+                  taskType === "MAINTENANCE"
+                    ? "bg-orange-500 text-white border-orange-500 shadow-sm"
+                    : "bg-white dark:bg-slate-700 text-slate-500 dark:text-slate-300 border-slate-200 dark:border-slate-600 hover:border-orange-300"
+                }`}
+              >
+                🔧 תחזוקה
+              </button>
+            </div>
+          </div>
+
+          <div>
+            <p className="text-xs text-slate-400 dark:text-slate-500 font-medium mb-3">עדיפות</p>
+            <div className="flex gap-2">
+              {priorityOptions.map((opt) => (
+                <button
+                  key={opt.value}
+                  type="button"
+                  onClick={() => setPriority(opt.value)}
+                  className={`flex-1 py-2.5 rounded-xl border text-xs font-semibold transition-all ${
+                    priority === opt.value ? opt.active : opt.inactive
+                  }`}
+                >
+                  {opt.label}
+                </button>
+              ))}
+            </div>
           </div>
         </div>
 

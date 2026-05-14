@@ -23,6 +23,14 @@ const statusIcon: Record<string, string> = {
   CANCELLED:   "❌",
 };
 
+const priorityConfig: Record<"URGENT" | "NORMAL" | "LOW", { label: string; color: string }> = {
+  URGENT: { label: "דחוף", color: "bg-red-100 text-red-700" },
+  NORMAL: { label: "רגיל", color: "bg-blue-100 text-blue-700" },
+  LOW:    { label: "נמוך",  color: "bg-slate-100 text-slate-500" },
+};
+
+const priorityRank: Record<"URGENT" | "NORMAL" | "LOW", number> = { URGENT: 0, NORMAL: 1, LOW: 2 };
+
 export default async function DriverDashboard() {
   const session = await auth();
   const driverId = session!.user.id;
@@ -37,6 +45,7 @@ export default async function DriverDashboard() {
         title: true,
         deliveryAddress: true,
         status: true,
+        priority: true,
         scheduledFor: true,
         createdAt: true,
       },
@@ -45,8 +54,10 @@ export default async function DriverDashboard() {
     prisma.task.count({ where: { assignedDriverId: driverId, status: "PENDING" } }),
   ]);
 
-  const activeTasks = tasks.filter((t) => t.status === "PENDING" || t.status === "IN_PROGRESS");
-  const doneTasks   = tasks.filter((t) => t.status === "COMPLETED" || t.status === "CANCELLED");
+  const activeTasks = tasks
+    .filter((t) => t.status === "PENDING" || t.status === "IN_PROGRESS")
+    .sort((a, b) => priorityRank[a.priority] - priorityRank[b.priority]);
+  const doneTasks = tasks.filter((t) => t.status === "COMPLETED" || t.status === "CANCELLED");
 
   return (
     <div className="space-y-6">
@@ -88,11 +99,16 @@ export default async function DriverDashboard() {
             >
               <div className="flex items-start justify-between gap-3">
                 <div className="min-w-0">
-                  <div className="flex items-center gap-2 mb-1">
+                  <div className="flex items-center gap-2 mb-1 flex-wrap">
                     <span>{statusIcon[task.status]}</span>
                     <span className={`text-xs font-medium px-2 py-0.5 rounded-full ${statusColor[task.status]}`}>
                       {statusLabel[task.status]}
                     </span>
+                    {task.priority !== "NORMAL" && (
+                      <span className={`text-xs font-semibold px-2 py-0.5 rounded-full ${priorityConfig[task.priority].color}`}>
+                        {priorityConfig[task.priority].label}
+                      </span>
+                    )}
                   </div>
                   <p className="font-semibold text-slate-800 dark:text-slate-100">{task.title}</p>
                   <p className="text-slate-500 dark:text-slate-400 text-sm mt-1 flex items-center gap-1">

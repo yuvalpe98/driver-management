@@ -12,25 +12,35 @@ export default function ToggleDriverButton({
 }) {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
 
   async function toggle() {
     setLoading(true);
-    await fetch(`/api/drivers/${driverId}`, { method: "PATCH" });
+    setError("");
+    const res = await fetch(`/api/drivers/${driverId}`, { method: "PATCH" });
     setLoading(false);
+    if (!res.ok) {
+      const data = await res.json().catch(() => ({}));
+      setError(data.error ?? "שגיאה בעדכון הנהג");
+      return;
+    }
     router.refresh();
   }
 
   return (
-    <button
-      onClick={toggle}
-      disabled={loading}
-      className={`text-xs font-medium px-3 py-1.5 rounded-lg transition-colors disabled:opacity-50 ${
-        isActive
-          ? "bg-red-50 text-red-600 hover:bg-red-100"
-          : "bg-green-50 text-green-600 hover:bg-green-100"
-      }`}
-    >
-      {loading ? "..." : isActive ? "השבת" : "הפעל"}
-    </button>
+    <div className="flex flex-col items-end gap-1">
+      <button
+        onClick={toggle}
+        disabled={loading}
+        className={`text-xs font-medium px-3 py-1.5 rounded-lg transition-colors disabled:opacity-50 ${
+          isActive
+            ? "bg-red-50 text-red-600 hover:bg-red-100"
+            : "bg-green-50 text-green-600 hover:bg-green-100"
+        }`}
+      >
+        {loading ? "..." : isActive ? "השבת" : "הפעל"}
+      </button>
+      {error && <p className="text-xs text-red-600 max-w-[200px] text-right">{error}</p>}
+    </div>
   );
 }

@@ -2,6 +2,7 @@ import { requireRole } from "@/lib/auth-guard";
 import { prisma } from "@/lib/prisma";
 import { createTaskSchema } from "@/lib/validations";
 import { sendWhatsApp } from "@/lib/whatsapp";
+import { sendPush } from "@/lib/push";
 import { NextResponse } from "next/server";
 
 export async function GET() {
@@ -29,7 +30,7 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "נתונים לא תקינים" }, { status: 400 });
   }
 
-  const { title, description, deliveryAddress, assignedDriverId, scheduledFor, taskType, items } = parsed.data;
+  const { title, description, deliveryAddress, assignedDriverId, scheduledFor, taskType, priority, items } = parsed.data;
 
   const driver = await prisma.user.findUnique({
     where: { id: assignedDriverId, role: "DRIVER", isActive: true },
@@ -71,6 +72,7 @@ export async function POST(req: Request) {
       assignedDriverId,
       createdByManagerId: session.user.id,
       taskType,
+      priority,
       scheduledFor: scheduledFor ? new Date(scheduledFor) : null,
       ...(items && items.length > 0
         ? { items: { create: items.map((i) => ({ name: i.name, quantity: i.quantity })) } }
@@ -78,6 +80,13 @@ export async function POST(req: Request) {
     },
     select: { id: true, title: true, status: true },
   });
+
+  // Push notification to driver — fire-and-forget
+  sendPush(assignedDriverId, {
+    title: "משימה חדשה הוקצתה לך",
+    body: `${title} — ${deliveryAddress}`,
+    url: `/driver/tasks/${task.id}`,
+  }).catch(() => {});
 
   // WhatsApp notification — fire-and-forget, never blocks task creation
   if (driver.phone) {
