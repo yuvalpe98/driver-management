@@ -12,6 +12,14 @@ export const metadata: Metadata = {
   title: "מערכת ניהול נהגים",
   description: "מערכת לניהול נהגים ומשימות",
   manifest: "/manifest.json",
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: "default",
+    title: "נהגים",
+  },
+  other: {
+    "mobile-web-app-capable": "yes",
+  },
 };
 
 export default function RootLayout({
@@ -21,6 +29,9 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="he" dir="rtl" className={`${heebo.variable} h-full antialiased`} suppressHydrationWarning>
+      <head>
+        <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+      </head>
       <body className="min-h-full flex flex-col font-[family-name:var(--font-heebo)]">
         <ThemeProvider attribute="class" defaultTheme="light" disableTransitionOnChange>
           {children}
