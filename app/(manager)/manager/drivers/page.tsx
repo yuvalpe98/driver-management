@@ -8,7 +8,7 @@ export default async function DriversPage() {
     select: {
       id: true,
       name: true,
-      email: true,
+      username: true,
       phone: true,
       isActive: true,
       createdAt: true,
@@ -44,7 +44,7 @@ export default async function DriversPage() {
             <thead>
               <tr className="border-b border-slate-100 dark:border-slate-700 bg-slate-50 dark:bg-slate-700/50 text-slate-500 dark:text-slate-400 text-xs uppercase tracking-wide">
                 <th className="text-right px-6 py-3 font-medium">שם</th>
-                <th className="text-right px-6 py-3 font-medium hidden md:table-cell">אימייל</th>
+                <th className="text-right px-6 py-3 font-medium hidden md:table-cell">שם משתמש</th>
                 <th className="text-right px-6 py-3 font-medium hidden lg:table-cell">טלפון</th>
                 <th className="text-right px-6 py-3 font-medium hidden sm:table-cell">משימות</th>
                 <th className="text-right px-6 py-3 font-medium">סטטוס</th>
@@ -64,7 +64,7 @@ export default async function DriversPage() {
                       <span className="font-medium text-slate-800 dark:text-slate-100">{driver.name}</span>
                     </div>
                   </td>
-                  <td className="px-6 py-4 text-slate-500 dark:text-slate-400 hidden md:table-cell">{driver.email}</td>
+                  <td className="px-6 py-4 text-slate-500 dark:text-slate-400 hidden md:table-cell">{driver.username}</td>
                   <td className="px-6 py-4 text-slate-500 dark:text-slate-400 hidden lg:table-cell">
                     {driver.phone ?? "—"}
                   </td>

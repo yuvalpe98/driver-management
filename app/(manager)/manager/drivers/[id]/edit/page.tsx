@@ -7,7 +7,7 @@ export default async function EditDriverPage({ params }: { params: Promise<{ id:
 
   const driver = await prisma.user.findUnique({
     where: { id, role: "DRIVER" },
-    select: { id: true, name: true, email: true, phone: true },
+    select: { id: true, name: true, username: true, phone: true },
   });
 
   if (!driver) notFound();

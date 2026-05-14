@@ -11,22 +11,22 @@ async function main() {
   const driverHash = await bcrypt.hash("Driver1234!", 12);
 
   const manager = await prisma.user.upsert({
-    where: { email: "manager@company.com" },
+    where: { username: "manager" },
     update: {},
     create: {
       name: "מנהל ראשי",
-      email: "manager@company.com",
+      username: "manager",
       passwordHash,
       role: Role.MANAGER,
     },
   });
 
   const driver1 = await prisma.user.upsert({
-    where: { email: "driver1@company.com" },
+    where: { username: "yossi" },
     update: {},
     create: {
       name: "יוסי כהן",
-      email: "driver1@company.com",
+      username: "yossi",
       passwordHash: driverHash,
       role: Role.DRIVER,
       phone: "050-1234567",
@@ -34,11 +34,11 @@ async function main() {
   });
 
   const driver2 = await prisma.user.upsert({
-    where: { email: "driver2@company.com" },
+    where: { username: "david" },
     update: {},
     create: {
       name: "דוד לוי",
-      email: "driver2@company.com",
+      username: "david",
       passwordHash: driverHash,
       role: Role.DRIVER,
       phone: "052-7654321",
@@ -65,9 +65,9 @@ async function main() {
   });
 
   console.log("✅ Seed complete");
-  console.log("   Manager:  manager@company.com  / Admin1234!");
-  console.log("   Driver 1: driver1@company.com  / Driver1234!");
-  console.log("   Driver 2: driver2@company.com  / Driver1234!");
+  console.log("   Manager:  manager  / Admin1234!");
+  console.log("   Driver 1: yossi    / Driver1234!");
+  console.log("   Driver 2: david    / Driver1234!");
 }
 
 main()

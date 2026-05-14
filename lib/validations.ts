@@ -1,13 +1,13 @@
 import { z } from "zod";
 
 export const loginSchema = z.object({
-  email: z.string().email(),
+  username: z.string().min(1),
   password: z.string().min(1),
 });
 
 export const createDriverSchema = z.object({
   name: z.string().min(2).max(100),
-  email: z.string().email(),
+  username: z.string().min(2).max(50).regex(/^[a-zA-Z0-9]+$/, "שם משתמש יכול להכיל אותיות ומספרים בלבד"),
   password: z.string().min(8).max(72),
   phone: z.string().optional(),
 });
@@ -59,7 +59,7 @@ export const updateInventoryItemSchema = z.object({
 
 export const updateDriverSchema = z.object({
   name: z.string().min(2).max(100).optional(),
-  email: z.string().email().optional(),
+  username: z.string().min(2).max(50).regex(/^[a-zA-Z0-9]+$/, "שם משתמש יכול להכיל אותיות ומספרים בלבד").optional(),
   phone: z.string().optional(),
   password: z.string().min(8).max(72).optional(),
   isActive: z.boolean().optional(),

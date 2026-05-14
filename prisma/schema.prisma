@@ -38,7 +38,7 @@ enum TaskPriority {
 model User {
   id           String   @id @default(uuid())
   name         String
-  email        String   @unique
+  username     String   @unique
   passwordHash String
   role         Role
   phone        String?

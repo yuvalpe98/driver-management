@@ -10,7 +10,7 @@ export async function GET() {
 
   const drivers = await prisma.user.findMany({
     where: { role: "DRIVER", isActive: true },
-    select: { id: true, name: true, email: true, phone: true },
+    select: { id: true, name: true, username: true, phone: true },
     orderBy: { name: "asc" },
   });
 
@@ -27,18 +27,18 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "נתונים לא תקינים" }, { status: 400 });
   }
 
-  const { name, email, password, phone } = parsed.data;
+  const { name, username, password, phone } = parsed.data;
 
-  const existing = await prisma.user.findUnique({ where: { email } });
+  const existing = await prisma.user.findUnique({ where: { username } });
   if (existing) {
-    return NextResponse.json({ error: "כתובת האימייל כבר קיימת במערכת" }, { status: 409 });
+    return NextResponse.json({ error: "שם המשתמש כבר קיים במערכת" }, { status: 409 });
   }
 
   const passwordHash = await bcrypt.hash(password, 12);
 
   const driver = await prisma.user.create({
-    data: { name, email, passwordHash, role: "DRIVER", phone: phone ?? null },
-    select: { id: true, name: true, email: true },
+    data: { name, username, passwordHash, role: "DRIVER", phone: phone ?? null },
+    select: { id: true, name: true, username: true },
   });
 
   return NextResponse.json(driver, { status: 201 });

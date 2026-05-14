@@ -13,7 +13,7 @@ export async function GET(_req: Request, { params }: { params: Promise<{ id: str
   const driver = await prisma.user.findUnique({
     where: { id, role: "DRIVER" },
     select: {
-      id: true, name: true, email: true, phone: true, isActive: true, createdAt: true,
+      id: true, name: true, username: true, phone: true, isActive: true, createdAt: true,
       assignedTasks: {
         orderBy: { createdAt: "desc" },
         select: { id: true, title: true, status: true, createdAt: true },
@@ -40,10 +40,10 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
     return NextResponse.json({ error: "נתונים לא תקינים" }, { status: 400 });
   }
 
-  const { name, email, phone, password, isActive } = parsed.data;
+  const { name, username, phone, password, isActive } = parsed.data;
 
   // If toggling isActive only (legacy behavior from ToggleDriverButton)
-  if (isActive !== undefined && !name && !email && !phone && !password) {
+  if (isActive !== undefined && !name && !username && !phone && !password) {
     // Block deactivation when driver has open tasks
     if (isActive === false) {
       const openCount = await prisma.task.count({
@@ -64,17 +64,17 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
     return NextResponse.json(updated);
   }
 
-  // Check email uniqueness if email is changing
-  if (email && email !== driver.email) {
-    const conflict = await prisma.user.findUnique({ where: { email } });
+  // Check username uniqueness if username is changing
+  if (username && username !== driver.username) {
+    const conflict = await prisma.user.findUnique({ where: { username } });
     if (conflict) {
-      return NextResponse.json({ error: "כתובת האימייל כבר בשימוש" }, { status: 409 });
+      return NextResponse.json({ error: "שם המשתמש כבר בשימוש" }, { status: 409 });
     }
   }
 
   const data: Record<string, unknown> = {};
   if (name) data["name"] = name;
-  if (email) data["email"] = email;
+  if (username) data["username"] = username;
   if (phone !== undefined) data["phone"] = phone || null;
   if (isActive !== undefined) data["isActive"] = isActive;
   if (password) data["passwordHash"] = await bcrypt.hash(password, 12);
@@ -82,7 +82,7 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
   const updated = await prisma.user.update({
     where: { id },
     data,
-    select: { id: true, name: true, email: true, phone: true, isActive: true },
+    select: { id: true, name: true, username: true, phone: true, isActive: true },
   });
 
   return NextResponse.json(updated);

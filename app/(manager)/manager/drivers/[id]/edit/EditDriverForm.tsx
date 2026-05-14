@@ -8,7 +8,7 @@ import { FormField, inputClass } from "@/components/ui/FormField";
 interface Driver {
   id: string;
   name: string;
-  email: string;
+  username: string;
   phone: string | null;
 }
 
@@ -18,7 +18,7 @@ export default function EditDriverForm({ driver }: { driver: Driver }) {
   const [error, setError] = useState("");
   const [form, setForm] = useState({
     name: driver.name,
-    email: driver.email,
+    username: driver.username,
     phone: driver.phone ?? "",
     password: "",
   });
@@ -35,7 +35,7 @@ export default function EditDriverForm({ driver }: { driver: Driver }) {
 
     const body: Record<string, string> = {
       name: form.name,
-      email: form.email,
+      username: form.username,
     };
     if (form.phone.trim()) body["phone"] = form.phone.trim();
     else body["phone"] = "";
@@ -87,13 +87,17 @@ export default function EditDriverForm({ driver }: { driver: Driver }) {
             />
           </FormField>
 
-          <FormField label="אימייל" required>
+          <FormField label="שם משתמש" required>
             <input
-              type="email"
+              type="text"
               className={inputClass}
-              value={form.email}
-              onChange={set("email")}
+              value={form.username}
+              onChange={set("username")}
               required
+              minLength={2}
+              maxLength={50}
+              pattern="[a-zA-Z0-9]+"
+              title="אותיות ומספרים בלבד"
             />
           </FormField>
 

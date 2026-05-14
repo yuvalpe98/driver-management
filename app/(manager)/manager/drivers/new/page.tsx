@@ -11,7 +11,7 @@ export default function NewDriverPage() {
   const [error, setError] = useState("");
   const [form, setForm] = useState({
     name: "",
-    email: "",
+    username: "",
     password: "",
     phone: "",
   });
@@ -74,14 +74,18 @@ export default function NewDriverPage() {
             />
           </FormField>
 
-          <FormField label="כתובת אימייל" required>
+          <FormField label="שם משתמש" required>
             <input
-              type="email"
+              type="text"
               className={inputClass}
-              placeholder="driver@company.com"
-              value={form.email}
-              onChange={set("email")}
+              placeholder="username123"
+              value={form.username}
+              onChange={set("username")}
               required
+              minLength={2}
+              maxLength={50}
+              pattern="[a-zA-Z0-9]+"
+              title="אותיות ומספרים בלבד"
             />
           </FormField>
 

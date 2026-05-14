@@ -19,7 +19,7 @@ export default async function DriverDetailPage({ params }: { params: Promise<{ i
   const driver = await prisma.user.findUnique({
     where: { id, role: "DRIVER" },
     select: {
-      id: true, name: true, email: true, phone: true, isActive: true, createdAt: true,
+      id: true, name: true, username: true, phone: true, isActive: true, createdAt: true,
       assignedTasks: {
         orderBy: { createdAt: "desc" },
         select: { id: true, title: true, status: true, deliveryAddress: true, createdAt: true },
@@ -51,7 +51,7 @@ export default async function DriverDetailPage({ params }: { params: Promise<{ i
             </div>
             <div>
               <h2 className="text-lg font-bold text-slate-800 dark:text-slate-100">{driver.name}</h2>
-              <p className="text-slate-500 dark:text-slate-400 text-sm">{driver.email}</p>
+              <p className="text-slate-500 dark:text-slate-400 text-sm">@{driver.username}</p>
               {driver.phone && <p className="text-slate-400 dark:text-slate-500 text-sm">{driver.phone}</p>}
               <p className="text-slate-400 dark:text-slate-500 text-xs mt-1">
                 הצטרף: {new Date(driver.createdAt).toLocaleDateString("he-IL")}

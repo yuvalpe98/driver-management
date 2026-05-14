@@ -14,11 +14,11 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         if (!parsed.success) return null;
 
         const user = await prisma.user.findUnique({
-          where: { email: parsed.data.email },
+          where: { username: parsed.data.username },
           select: {
             id: true,
             name: true,
-            email: true,
+            username: true,
             passwordHash: true,
             role: true,
             isActive: true,
@@ -30,7 +30,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         const valid = await bcrypt.compare(parsed.data.password, user.passwordHash);
         if (!valid) return null;
 
-        return { id: user.id, name: user.name, email: user.email, role: user.role };
+        return { id: user.id, name: user.name, username: user.username, role: user.role };
       },
     }),
   ],

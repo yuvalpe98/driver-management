@@ -44,7 +44,7 @@ export default async function ManagerTaskDetailPage({
       scheduledFor: true,
       completedAt: true,
       createdAt: true,
-      assignedDriver: { select: { id: true, name: true, email: true } },
+      assignedDriver: { select: { id: true, name: true, username: true } },
       createdByManager: { select: { name: true } },
       completion: {
         select: { recipientName: true, signatureImageUrl: true, completedAt: true },
