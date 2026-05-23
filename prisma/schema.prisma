@@ -35,6 +35,11 @@ enum TaskPriority {
   LOW
 }
 
+enum CatalogCategory {
+  INVENTORY
+  EQUIPMENT
+}
+
 model User {
   id           String   @id @default(uuid())
   name         String
@@ -102,31 +107,46 @@ model TaskItem {
   @@index([taskId])
 }
 
+model CatalogItem {
+  id        String          @id @default(uuid())
+  name      String          @unique
+  category  CatalogCategory
+  unit      String?                          // only relevant for INVENTORY items
+  createdAt DateTime        @default(now())
+  updatedAt DateTime        @updatedAt
+
+  inventoryItems InventoryItem[]
+  equipment      Equipment[]
+}
+
 model InventoryItem {
-  id        String   @id @default(uuid())
-  name      String
-  quantity  Int      @default(0)
-  unit      String   @default("יחידות")
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id            String      @id @default(uuid())
+  quantity      Int         @default(0)
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
 
-  driverId  String
-  driver    User     @relation("DriverInventory", fields: [driverId], references: [id])
+  driverId      String
+  driver        User        @relation("DriverInventory", fields: [driverId], references: [id])
 
-  @@unique([driverId, name])
+  catalogItemId String
+  catalogItem   CatalogItem @relation(fields: [catalogItemId], references: [id])
+
+  @@unique([driverId, catalogItemId])
   @@index([driverId])
 }
 
 model Equipment {
-  id        String          @id @default(uuid())
-  name      String
-  status    EquipmentStatus @default(GOOD)
-  notes     String?
-  createdAt DateTime        @default(now())
-  updatedAt DateTime        @updatedAt
+  id            String          @id @default(uuid())
+  status        EquipmentStatus @default(GOOD)
+  notes         String?
+  createdAt     DateTime        @default(now())
+  updatedAt     DateTime        @updatedAt
 
-  driverId  String
-  driver    User            @relation(fields: [driverId], references: [id])
+  driverId      String
+  driver        User            @relation(fields: [driverId], references: [id])
+
+  catalogItemId String
+  catalogItem   CatalogItem     @relation(fields: [catalogItemId], references: [id])
 
   @@index([driverId])
   @@index([status])
