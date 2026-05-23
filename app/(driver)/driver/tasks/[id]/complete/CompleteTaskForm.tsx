@@ -7,7 +7,7 @@ import SignatureCanvas, { SignatureCanvasRef } from "@/components/driver/Signatu
 import Link from "next/link";
 
 // BarcodeScanner uses @zxing WASM — load client-only to avoid SSR issues
-const BarcodeScanner = dynamic(() => import("./BarcodeScanner"), { ssr: false });
+const BarcodeScanner = dynamic(() => import("@/components/ui/BarcodeScanner"), { ssr: false });
 
 // ─────────────────────────────────────────────────────────────────────────────
 
