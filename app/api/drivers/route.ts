@@ -27,7 +27,7 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "נתונים לא תקינים" }, { status: 400 });
   }
 
-  const { name, username, password, phone } = parsed.data;
+  const { name, username, password, phone, role } = parsed.data;
 
   const existing = await prisma.user.findUnique({ where: { username } });
   if (existing) {
@@ -36,10 +36,16 @@ export async function POST(req: Request) {
 
   const passwordHash = await bcrypt.hash(password, 12);
 
-  const driver = await prisma.user.create({
-    data: { name, username, passwordHash, role: "DRIVER", phone: phone ?? null },
-    select: { id: true, name: true, username: true },
+  const user = await prisma.user.create({
+    data: {
+      name,
+      username,
+      passwordHash,
+      role: role ?? "DRIVER",
+      phone: role === "LAB_USER" ? null : (phone ?? null),
+    },
+    select: { id: true, name: true, username: true, role: true },
   });
 
-  return NextResponse.json(driver, { status: 201 });
+  return NextResponse.json(user, { status: 201 });
 }

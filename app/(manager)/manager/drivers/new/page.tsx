@@ -5,16 +5,19 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { FormField, inputClass } from "@/components/ui/FormField";
 
-export default function NewDriverPage() {
+type Role = "DRIVER" | "LAB_USER";
+
+const roleOptions: { value: Role; label: string; desc: string; icon: string }[] = [
+  { value: "DRIVER",   label: "נהג",           desc: "גישה למשימות ומלאי",  icon: "🚗" },
+  { value: "LAB_USER", label: "משתמש מעבדה",   desc: "גישה לטופס שחרור",    icon: "🧪" },
+];
+
+export default function NewTeamMemberPage() {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
-  const [form, setForm] = useState({
-    name: "",
-    username: "",
-    password: "",
-    phone: "",
-  });
+  const [role, setRole] = useState<Role>("DRIVER");
+  const [form, setForm] = useState({ name: "", username: "", password: "", phone: "" });
 
   function set(field: keyof typeof form) {
     return (e: React.ChangeEvent<HTMLInputElement>) =>
@@ -29,14 +32,14 @@ export default function NewDriverPage() {
     const res = await fetch("/api/drivers", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(form),
+      body: JSON.stringify({ ...form, role }),
     });
 
     const data = await res.json();
     setLoading(false);
 
     if (!res.ok) {
-      setError(data.error ?? "שגיאה בהוספת הנהג");
+      setError(data.error ?? "שגיאה בהוספת המשתמש");
       return;
     }
 
@@ -50,17 +53,46 @@ export default function NewDriverPage() {
       <div className="flex items-center gap-3 mb-8">
         <Link
           href="/manager/drivers"
-          className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-slate-200 transition-colors text-slate-500"
+          className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors text-slate-500"
         >
           ←
         </Link>
         <div>
-          <h1 className="text-2xl font-bold text-slate-800 dark:text-slate-100">נהג חדש</h1>
-          <p className="text-slate-500 dark:text-slate-400 text-sm mt-0.5">הוסף נהג חדש למערכת</p>
+          <h1 className="text-2xl font-bold text-slate-800 dark:text-slate-100">הוסף חבר צוות</h1>
+          <p className="text-slate-500 dark:text-slate-400 text-sm mt-0.5">יצירת משתמש חדש במערכת</p>
         </div>
       </div>
 
-      <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-700 p-8">
+      <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-700 p-8 space-y-6">
+        {/* Role selector */}
+        <div>
+          <p className="text-sm font-medium text-slate-700 dark:text-slate-200 mb-3">סוג משתמש</p>
+          <div className="grid grid-cols-2 gap-3">
+            {roleOptions.map((opt) => (
+              <button
+                key={opt.value}
+                type="button"
+                onClick={() => setRole(opt.value)}
+                className={`flex flex-col items-center gap-1 p-4 rounded-xl border-2 transition-all text-center ${
+                  role === opt.value
+                    ? "border-blue-500 bg-blue-50 dark:bg-blue-900/30"
+                    : "border-slate-200 dark:border-slate-600 hover:border-slate-300 dark:hover:border-slate-500"
+                }`}
+              >
+                <span className="text-2xl">{opt.icon}</span>
+                <span className={`text-sm font-semibold ${
+                  role === opt.value ? "text-blue-700 dark:text-blue-300" : "text-slate-700 dark:text-slate-200"
+                }`}>
+                  {opt.label}
+                </span>
+                <span className="text-xs text-slate-400 dark:text-slate-500">{opt.desc}</span>
+              </button>
+            ))}
+          </div>
+        </div>
+
+        <hr className="border-slate-100 dark:border-slate-700" />
+
         <form onSubmit={handleSubmit} className="space-y-5">
           <FormField label="שם מלא" required>
             <input
@@ -101,15 +133,17 @@ export default function NewDriverPage() {
             />
           </FormField>
 
-          <FormField label="טלפון">
-            <input
-              type="tel"
-              className={inputClass}
-              placeholder="050-0000000"
-              value={form.phone}
-              onChange={set("phone")}
-            />
-          </FormField>
+          {role === "DRIVER" && (
+            <FormField label="טלפון">
+              <input
+                type="tel"
+                className={inputClass}
+                placeholder="050-0000000"
+                value={form.phone}
+                onChange={set("phone")}
+              />
+            </FormField>
+          )}
 
           {error && (
             <div className="flex items-center gap-2 bg-red-50 border border-red-200 text-red-700 text-sm rounded-xl px-4 py-3">
@@ -126,7 +160,7 @@ export default function NewDriverPage() {
               disabled={loading}
               className="flex-1 bg-blue-600 hover:bg-blue-700 disabled:bg-blue-400 text-white font-semibold py-2.5 px-4 rounded-xl transition-colors text-sm shadow-sm"
             >
-              {loading ? "שומר..." : "הוסף נהג"}
+              {loading ? "שומר..." : `הוסף ${role === "DRIVER" ? "נהג" : "משתמש מעבדה"}`}
             </button>
             <Link
               href="/manager/drivers"

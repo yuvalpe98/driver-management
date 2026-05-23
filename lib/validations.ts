@@ -10,6 +10,25 @@ export const createDriverSchema = z.object({
   username: z.string().min(2).max(50).regex(/^[a-zA-Z0-9]+$/, "שם משתמש יכול להכיל אותיות ומספרים בלבד"),
   password: z.string().min(8).max(72),
   phone: z.string().optional(),
+  role: z.enum(["DRIVER", "LAB_USER"]).optional().default("DRIVER"),
+});
+
+export const createLabTechnicianSchema = z.object({
+  name: z.string().min(2).max(100),
+});
+
+export const updateLabTechnicianSchema = z.object({
+  name: z.string().min(2).max(100).optional(),
+  isActive: z.boolean().optional(),
+});
+
+export const createLabPartSchema = z.object({
+  name: z.string().min(1).max(100),
+});
+
+export const updateLabPartSchema = z.object({
+  name: z.string().min(1).max(100).optional(),
+  isActive: z.boolean().optional(),
 });
 
 export const createTaskItemSchema = z.object({
