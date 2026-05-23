@@ -56,14 +56,17 @@ export default function Navbar({ userName }: NavbarProps) {
           <div className="flex items-center gap-2">
             <NotificationToggle />
             <DarkModeToggle />
-            <div className="flex items-center gap-2">
+            <Link
+              href="/manager/profile"
+              className="flex items-center gap-2 hover:opacity-75 transition-opacity"
+            >
               <div className="w-8 h-8 bg-slate-200 dark:bg-slate-600 rounded-full flex items-center justify-center">
                 <span className="text-xs font-semibold text-slate-600 dark:text-slate-200">
                   {userName.charAt(0)}
                 </span>
               </div>
               <span className="text-sm font-medium text-slate-700 dark:text-slate-200 hidden sm:block">{userName}</span>
-            </div>
+            </Link>
             <button
               onClick={() => signOut({ callbackUrl: "/login" })}
               className="text-sm text-slate-500 dark:text-slate-400 hover:text-red-600 dark:hover:text-red-400 transition-colors px-3 py-1.5 rounded-lg hover:bg-red-50 dark:hover:bg-red-900/30"
