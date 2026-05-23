@@ -2,6 +2,7 @@ import { requireRole } from "@/lib/auth-guard";
 import { prisma } from "@/lib/prisma";
 import { completeTaskSchema } from "@/lib/validations";
 import { sendPush } from "@/lib/push";
+import { sendWhatsApp } from "@/lib/whatsapp";
 import { NextResponse } from "next/server";
 
 export async function POST(
@@ -16,7 +17,13 @@ export async function POST(
 
   const task = await prisma.task.findUnique({
     where: { id, assignedDriverId: driverId },
-    select: { id: true, title: true, status: true, createdByManagerId: true },
+    select: {
+      id: true,
+      title: true,
+      status: true,
+      createdByManagerId: true,
+      createdByManager: { select: { phone: true } },
+    },
   });
 
   if (!task) return NextResponse.json({ error: "המשימה לא נמצאה" }, { status: 404 });
@@ -75,11 +82,21 @@ export async function POST(
   ]);
 
   // Notify the manager who created this task — fire-and-forget
+  const driverName = session.user.name;
+  const managerPhone = task.createdByManager.phone;
+
   sendPush(task.createdByManagerId, {
     title: "משימה הושלמה",
     body: `${task.title} — נמסר ל${recipientName}`,
     url: `/manager/tasks/${id}`,
   }).catch(() => {});
+
+  if (managerPhone) {
+    sendWhatsApp(
+      managerPhone,
+      `✅ משימה הושלמה!\n📋 משימה: ${task.title}\n🚗 נהג: ${driverName}\n👤 נמסר ל: ${recipientName}\n🔗 לפרטים: https://driver-management-production-f9f1.up.railway.app/manager/tasks/${id}`
+    ).catch(() => {});
+  }
 
   return NextResponse.json({ success: true });
 }
