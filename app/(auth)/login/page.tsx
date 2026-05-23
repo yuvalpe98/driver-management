@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { signIn } from "next-auth/react";
 import { useRouter } from "next/navigation";
+import DarkModeToggle from "@/components/ui/DarkModeToggle";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -36,6 +37,11 @@ export default function LoginPage() {
 
   return (
     <main className="min-h-screen bg-gradient-to-br from-blue-50 to-slate-100 dark:from-slate-900 dark:to-slate-800 flex items-center justify-center p-4">
+      {/* Dark mode toggle — fixed top-right corner */}
+      <div className="fixed top-4 left-4 z-10">
+        <DarkModeToggle />
+      </div>
+
       <div className="w-full max-w-md">
         {/* Logo / Header */}
         <div className="text-center mb-8">

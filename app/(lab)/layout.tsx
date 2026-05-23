@@ -1,6 +1,7 @@
 import { auth } from "@/lib/auth";
 import { redirect } from "next/navigation";
 import LabSignOutButton from "./LabSignOutButton";
+import DarkModeToggle from "@/components/ui/DarkModeToggle";
 
 /**
  * Lab route group layout — accessible to LAB_USER only.
@@ -28,6 +29,7 @@ export default async function LabLayout({ children }: { children: React.ReactNod
 
           <div className="flex items-center gap-2">
             <span className="text-xs text-slate-500 dark:text-slate-400 hidden sm:block">{session.user.name}</span>
+            <DarkModeToggle />
             <LabSignOutButton />
           </div>
         </div>
