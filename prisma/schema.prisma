@@ -9,6 +9,7 @@ datasource db {
 enum Role {
   DRIVER
   MANAGER
+  LAB_USER
 }
 
 enum TaskStatus {
@@ -197,4 +198,50 @@ model PushSubscription {
   user     User   @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId])
+}
+
+// ── Lab Management ─────────────────────────────────────────────────────────────
+
+enum CustomerType {
+  OCCASIONAL_CUSTOMER  // לקוח מזדמן
+  CLALIT_ENGINEERING   // כללית הנדסה
+}
+
+model LabTechnician {
+  id        String   @id @default(uuid())
+  name      String
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  releaseLogs LabReleaseLog[]
+}
+
+model LabPart {
+  id        String   @id @default(uuid())
+  name      String
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  releaseLogs LabReleaseLog[]
+}
+
+model LabReleaseLog {
+  id               String       @id @default(uuid())
+  serialNumber     String
+  date             DateTime     @default(now())
+  workingHours     Int
+  customerType     CustomerType
+  isInspectionOnly Boolean      @default(false)
+  createdAt        DateTime     @default(now())
+
+  technicianId String
+  technician   LabTechnician @relation(fields: [technicianId], references: [id])
+
+  parts LabPart[]
+
+  @@index([serialNumber])
+  @@index([technicianId])
+  @@index([date])
 }
