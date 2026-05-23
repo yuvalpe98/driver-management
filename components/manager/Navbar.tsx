@@ -13,7 +13,8 @@ const links = [
   { href: "/manager/deliveries",   label: "יומן מסירות" },
   { href: "/manager/inventory",    label: "מלאי" },
   { href: "/manager/catalog",      label: "קטלוג" },
-  { href: "/manager/lab-settings", label: "מעבדה" },
+  { href: "/manager/lab-settings", label: "הגדרות מעבדה" },
+  { href: "/manager/lab-reports",  label: "דוח מעבדה" },
 ];
 
 interface NavbarProps {
