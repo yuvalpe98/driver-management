@@ -6,8 +6,13 @@ import Link from "next/link";
 import { FormField, inputClass } from "@/components/ui/FormField";
 
 interface Driver { id: string; name: string }
-interface InventoryItem { id: string; name: string; quantity: number; unit: string }
-interface TaskItem { name: string; quantity: number }
+interface CatalogItem { id: string; name: string; unit: string | null }
+// Shape returned by GET /api/inventory?driverId=... (manager view, post-catalog refactor)
+interface DriverInventoryItem {
+  id: string;
+  quantity: number;
+  catalogItem: { name: string; unit: string | null };
+}
 interface RecommendedDriver {
   id: string;
   name: string;
@@ -25,7 +30,12 @@ const priorityOptions: { value: TaskPriority; label: string; active: string; ina
   { value: "LOW",    label: "⚪ נמוך",  active: "bg-slate-500 text-white border-slate-500 shadow-sm", inactive: "bg-white dark:bg-slate-700 text-slate-500 dark:text-slate-300 border-slate-200 dark:border-slate-600 hover:border-slate-400" },
 ];
 
-export default function NewTaskForm({ drivers }: { drivers: Driver[] }) {
+interface Props {
+  drivers: Driver[];
+  catalogItems: CatalogItem[];
+}
+
+export default function NewTaskForm({ drivers, catalogItems }: Props) {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
@@ -39,27 +49,20 @@ export default function NewTaskForm({ drivers }: { drivers: Driver[] }) {
     scheduledFor: "",
   });
 
-  const [allItemNames, setAllItemNames] = useState<string[]>([]);
-  const [driverInventory, setDriverInventory] = useState<InventoryItem[]>([]);
-  const [items, setItems] = useState<TaskItem[]>([]);
-  const [newItemName, setNewItemName] = useState("");
-  const [newItemQty, setNewItemQty] = useState(1);
+  // quantities keyed by catalog item name — all start at 0
+  const [quantities, setQuantities] = useState<Record<string, number>>(
+    () => Object.fromEntries(catalogItems.map((c) => [c.name, 0]))
+  );
+
+  const [driverInventory, setDriverInventory] = useState<DriverInventoryItem[]>([]);
   const [recommendations, setRecommendations] = useState<RecommendedDriver[]>([]);
   const [recommendLoading, setRecommendLoading] = useState(false);
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  // Fetch all known item names once for the datalist suggestions
-  useEffect(() => {
-    fetch("/api/inventory")
-      .then((r) => r.json())
-      .then((data) => {
-        if (Array.isArray(data)) {
-          const names = [...new Set((data as InventoryItem[]).map((i) => i.name))].sort();
-          setAllItemNames(names);
-        }
-      })
-      .catch(() => {});
-  }, []);
+  // Items with quantity > 0 (derived — recomputed each render)
+  const activeItems = Object.entries(quantities)
+    .filter(([, qty]) => qty > 0)
+    .map(([name, quantity]) => ({ name, quantity }));
 
   // Fetch selected driver's inventory for stock warnings
   useEffect(() => {
@@ -75,12 +78,20 @@ export default function NewTaskForm({ drivers }: { drivers: Driver[] }) {
       setForm((prev) => ({ ...prev, [field]: e.target.value }));
   }
 
-  const fetchRecommendations = useCallback((address: string, taskItems: TaskItem[]) => {
+  function setQty(name: string, qty: number) {
+    setQuantities((prev) => ({ ...prev, [name]: Math.max(0, qty) }));
+  }
+
+  function getAvailable(name: string): number | null {
+    return driverInventory.find((i) => i.catalogItem.name === name)?.quantity ?? null;
+  }
+
+  const fetchRecommendations = useCallback((address: string, items: { name: string; quantity: number }[]) => {
     if (address.length < 5) { setRecommendations([]); return; }
     if (debounceRef.current) clearTimeout(debounceRef.current);
     debounceRef.current = setTimeout(async () => {
       setRecommendLoading(true);
-      const itemsParam = taskItems.map((i) => `${i.name}:${i.quantity}`).join(",");
+      const itemsParam = items.map((i) => `${i.name}:${i.quantity}`).join(",");
       const params = new URLSearchParams({ address });
       if (itemsParam) params.set("items", itemsParam);
       try {
@@ -97,34 +108,18 @@ export default function NewTaskForm({ drivers }: { drivers: Driver[] }) {
   }, []);
 
   useEffect(() => {
-    fetchRecommendations(form.deliveryAddress, items);
-  }, [form.deliveryAddress, items, fetchRecommendations]);
-
-  function addItem() {
-    const name = newItemName.trim();
-    if (!name || newItemQty <= 0) return;
-    setItems((prev) => {
-      const existing = prev.find((i) => i.name === name);
-      if (existing) return prev.map((i) => i.name === name ? { ...i, quantity: i.quantity + newItemQty } : i);
-      return [...prev, { name, quantity: newItemQty }];
-    });
-    setNewItemName("");
-    setNewItemQty(1);
-  }
-
-  function removeItem(name: string) {
-    setItems((prev) => prev.filter((i) => i.name !== name));
-  }
-
-  function getAvailable(name: string) {
-    return driverInventory.find((i) => i.name === name)?.quantity ?? null;
-  }
+    fetchRecommendations(form.deliveryAddress, activeItems);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [form.deliveryAddress, quantities, fetchRecommendations]);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setError("");
     if (!form.assignedDriverId) { setError("יש לבחור נהג"); return; }
     setLoading(true);
+
+    const items = taskType === "DELIVERY" && activeItems.length > 0 ? activeItems : undefined;
+
     const res = await fetch("/api/tasks", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -133,7 +128,7 @@ export default function NewTaskForm({ drivers }: { drivers: Driver[] }) {
         taskType,
         priority,
         scheduledFor: form.scheduledFor ? new Date(form.scheduledFor).toISOString() : undefined,
-        items: taskType === "DELIVERY" && items.length > 0 ? items : undefined,
+        items,
       }),
     });
     const data = await res.json();
@@ -164,7 +159,7 @@ export default function NewTaskForm({ drivers }: { drivers: Driver[] }) {
 
       <form onSubmit={handleSubmit} className="space-y-5">
 
-        {/* Task type toggle */}
+        {/* Task type + priority */}
         <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-700 p-4 space-y-4">
           <div>
             <p className="text-xs text-slate-400 dark:text-slate-500 font-medium mb-3">סוג משימה</p>
@@ -182,7 +177,10 @@ export default function NewTaskForm({ drivers }: { drivers: Driver[] }) {
               </button>
               <button
                 type="button"
-                onClick={() => { setTaskType("MAINTENANCE"); setItems([]); }}
+                onClick={() => {
+                  setTaskType("MAINTENANCE");
+                  setQuantities(Object.fromEntries(catalogItems.map((c) => [c.name, 0])));
+                }}
                 className={`flex-1 flex items-center justify-center gap-2 py-3 rounded-xl border text-sm font-semibold transition-all ${
                   taskType === "MAINTENANCE"
                     ? "bg-orange-500 text-white border-orange-500 shadow-sm"
@@ -229,73 +227,118 @@ export default function NewTaskForm({ drivers }: { drivers: Driver[] }) {
           </FormField>
         </div>
 
-        {/* Delivery items — only for DELIVERY tasks */}
+        {/* Delivery items — full catalog list, only for DELIVERY tasks */}
         {taskType === "DELIVERY" && (
           <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-700 p-6 space-y-4">
-            <div>
-              <h3 className="text-sm font-semibold text-slate-700 dark:text-slate-200">📦 פריטי משלוח</h3>
-              <p className="text-xs text-slate-400 dark:text-slate-500 mt-0.5">הוסף את הציוד שיש לספק</p>
+            <div className="flex items-start justify-between">
+              <div>
+                <h3 className="text-sm font-semibold text-slate-700 dark:text-slate-200">📦 פריטי משלוח</h3>
+                <p className="text-xs text-slate-400 dark:text-slate-500 mt-0.5">
+                  {activeItems.length > 0
+                    ? `${activeItems.length} סוגי פריטים נבחרו`
+                    : "עדכן כמויות לפריטים שיש לספק (0 = לא נכלל)"}
+                </p>
+              </div>
+              {activeItems.length > 0 && (
+                <button
+                  type="button"
+                  onClick={() => setQuantities(Object.fromEntries(catalogItems.map((c) => [c.name, 0])))}
+                  className="text-xs text-slate-400 hover:text-red-500 transition-colors"
+                >
+                  נקה הכל
+                </button>
+              )}
             </div>
 
-            <datalist id="item-suggestions">
-              {allItemNames.map((n) => <option key={n} value={n} />)}
-            </datalist>
-
-            <div className="flex gap-2">
-              <input
-                type="text"
-                list="item-suggestions"
-                placeholder="שם הפריט..."
-                value={newItemName}
-                onChange={(e) => setNewItemName(e.target.value)}
-                onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); addItem(); } }}
-                className="flex-1 border border-slate-200 dark:border-slate-600 rounded-xl px-3 py-2.5 text-sm bg-slate-50 dark:bg-slate-700 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-blue-300"
-              />
-              <input
-                type="number"
-                min={1}
-                value={newItemQty}
-                onChange={(e) => setNewItemQty(parseInt(e.target.value) || 1)}
-                className="w-20 border border-slate-200 dark:border-slate-600 rounded-xl px-3 py-2.5 text-sm bg-slate-50 dark:bg-slate-700 dark:text-slate-100 text-center focus:outline-none focus:ring-2 focus:ring-blue-300"
-              />
-              <button
-                type="button"
-                onClick={addItem}
-                disabled={!newItemName.trim()}
-                className="px-4 py-2.5 bg-blue-600 hover:bg-blue-700 disabled:bg-slate-300 dark:disabled:bg-slate-600 text-white text-sm font-semibold rounded-xl transition-colors"
-              >
-                הוסף
-              </button>
-            </div>
-
-            {items.length > 0 ? (
+            {catalogItems.length === 0 ? (
+              <div className="py-6 text-center space-y-1">
+                <p className="text-slate-400 dark:text-slate-500 text-sm">הקטלוג ריק</p>
+                <p className="text-slate-400 dark:text-slate-500 text-xs">
+                  <Link href="/manager/catalog" className="underline">הוסף פריטי מלאי לקטלוג</Link> כדי לכלול אותם במשימה
+                </p>
+              </div>
+            ) : (
               <div className="space-y-2">
-                {items.map((item) => {
+                {catalogItems.map((item) => {
+                  const qty = quantities[item.name] ?? 0;
                   const avail = getAvailable(item.name);
-                  const over = avail !== null && item.quantity > avail;
+                  const over = avail !== null && qty > 0 && qty > avail;
+                  const active = qty > 0;
+
                   return (
-                    <div key={item.name} className={`flex items-center justify-between px-4 py-2.5 rounded-xl border text-sm ${over ? "bg-red-50 border-red-200" : "bg-slate-50 dark:bg-slate-700 border-slate-100 dark:border-slate-600"}`}>
-                      <span className="font-medium text-slate-700 dark:text-slate-200">{item.name}</span>
-                      <div className="flex items-center gap-3">
-                        <span className={`font-bold ${over ? "text-red-600" : "text-slate-800 dark:text-slate-100"}`}>{item.quantity}</span>
-                        {over && <span className="text-xs text-red-500">⚠️ חורג ({avail} זמין)</span>}
-                        <button type="button" onClick={() => removeItem(item.name)} className="text-slate-400 hover:text-red-500 text-xs">הסר</button>
+                    <div
+                      key={item.id}
+                      className={`flex items-center justify-between px-4 py-3 rounded-xl border transition-colors ${
+                        over
+                          ? "bg-red-50 dark:bg-red-900/20 border-red-200 dark:border-red-800"
+                          : active
+                          ? "bg-blue-50 dark:bg-blue-900/20 border-blue-200 dark:border-blue-700"
+                          : "bg-slate-50 dark:bg-slate-700/40 border-slate-100 dark:border-slate-600"
+                      }`}
+                    >
+                      {/* Name + meta */}
+                      <div className="min-w-0 flex-1 me-3">
+                        <p className={`text-sm font-medium leading-tight ${
+                          active ? "text-slate-800 dark:text-slate-100" : "text-slate-400 dark:text-slate-500"
+                        }`}>
+                          {item.name}
+                        </p>
+                        <div className="flex items-center gap-2 mt-0.5 flex-wrap">
+                          {item.unit && (
+                            <span className="text-xs text-slate-400 dark:text-slate-500">{item.unit}</span>
+                          )}
+                          {over && (
+                            <span className="text-xs text-red-500 font-medium">⚠️ חורג ({avail} זמין)</span>
+                          )}
+                          {!over && active && avail !== null && (
+                            <span className="text-xs text-slate-400 dark:text-slate-500">זמין: {avail}</span>
+                          )}
+                        </div>
+                      </div>
+
+                      {/* Stepper */}
+                      <div className="flex items-center gap-1 shrink-0">
+                        <button
+                          type="button"
+                          onClick={() => setQty(item.name, qty - 1)}
+                          disabled={qty === 0}
+                          className="w-7 h-7 flex items-center justify-center rounded-lg border border-slate-200 dark:border-slate-600 text-slate-500 dark:text-slate-400 disabled:opacity-30 hover:bg-slate-100 dark:hover:bg-slate-600 transition-colors text-base font-bold leading-none"
+                        >
+                          −
+                        </button>
+                        <input
+                          type="number"
+                          min={0}
+                          value={qty === 0 ? "" : qty}
+                          placeholder="0"
+                          onChange={(e) => setQty(item.name, parseInt(e.target.value) || 0)}
+                          className={`w-12 text-center border rounded-lg px-1 py-1 text-sm transition-colors focus:outline-none focus:ring-2 focus:ring-blue-300 dark:bg-slate-700 dark:text-slate-100 ${
+                            active
+                              ? "border-blue-300 dark:border-blue-600 font-semibold"
+                              : "border-slate-200 dark:border-slate-600 text-slate-400 dark:text-slate-500"
+                          }`}
+                        />
+                        <button
+                          type="button"
+                          onClick={() => setQty(item.name, qty + 1)}
+                          className="w-7 h-7 flex items-center justify-center rounded-lg border border-slate-200 dark:border-slate-600 text-slate-500 dark:text-slate-400 hover:bg-blue-50 dark:hover:bg-blue-900/30 hover:border-blue-300 hover:text-blue-600 dark:hover:text-blue-400 transition-colors text-base font-bold leading-none"
+                        >
+                          +
+                        </button>
                       </div>
                     </div>
                   );
                 })}
               </div>
-            ) : (
-              <p className="text-xs text-slate-400 dark:text-slate-500 text-center py-2">לא נוספו פריטים עדיין</p>
             )}
           </div>
         )}
 
         {/* Driver recommendation */}
         {form.deliveryAddress.length >= 5 && (
-          <div className="bg-blue-50 border border-blue-100 rounded-2xl p-5 space-y-3">
+          <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-100 dark:border-blue-800 rounded-2xl p-5 space-y-3">
             <div className="flex items-center gap-2">
-              <span className="text-blue-700 font-semibold text-sm">🤖 המלצת מערכת</span>
+              <span className="text-blue-700 dark:text-blue-300 font-semibold text-sm">🤖 המלצת מערכת</span>
               {recommendLoading && <span className="text-xs text-blue-400">מחשב...</span>}
             </div>
             {recommendations.length === 0 && !recommendLoading && (
@@ -307,16 +350,18 @@ export default function NewTaskForm({ drivers }: { drivers: Driver[] }) {
                 type="button"
                 onClick={() => setForm((prev) => ({ ...prev, assignedDriverId: rec.id }))}
                 className={`w-full text-right p-3 rounded-xl border transition-all ${
-                  form.assignedDriverId === rec.id ? "border-blue-400 bg-white dark:bg-slate-700 shadow-sm" : "border-blue-200 dark:border-blue-800 bg-white/70 dark:bg-slate-700/50 hover:bg-white dark:hover:bg-slate-700"
+                  form.assignedDriverId === rec.id
+                    ? "border-blue-400 bg-white dark:bg-slate-700 shadow-sm"
+                    : "border-blue-200 dark:border-blue-800 bg-white/70 dark:bg-slate-700/50 hover:bg-white dark:hover:bg-slate-700"
                 }`}
               >
                 <div className="flex items-center justify-between gap-2">
                   <div className="flex items-center gap-2 flex-wrap">
                     <span className="font-semibold text-slate-800 dark:text-slate-100 text-sm">{rec.name}</span>
-                    {taskType === "DELIVERY" && items.length > 0 && rec.hasAllItems && (
+                    {taskType === "DELIVERY" && activeItems.length > 0 && rec.hasAllItems && (
                       <span className="text-xs bg-green-100 text-green-700 px-2 py-0.5 rounded-full">✅ יש כל הפריטים</span>
                     )}
-                    {taskType === "DELIVERY" && items.length > 0 && !rec.hasAllItems && (
+                    {taskType === "DELIVERY" && activeItems.length > 0 && !rec.hasAllItems && (
                       <span className="text-xs bg-yellow-100 text-yellow-700 px-2 py-0.5 rounded-full">⚠️ חסרים פריטים</span>
                     )}
                   </div>
@@ -340,7 +385,7 @@ export default function NewTaskForm({ drivers }: { drivers: Driver[] }) {
         </div>
 
         {error && (
-          <div className="flex items-start gap-2 bg-red-50 border border-red-200 text-red-700 text-sm rounded-xl px-4 py-3">
+          <div className="flex items-start gap-2 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 text-red-700 dark:text-red-400 text-sm rounded-xl px-4 py-3">
             <svg className="w-4 h-4 shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
               <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
             </svg>
@@ -349,10 +394,14 @@ export default function NewTaskForm({ drivers }: { drivers: Driver[] }) {
         )}
 
         <div className="flex gap-3">
-          <button type="submit" disabled={loading} className="flex-1 bg-blue-600 hover:bg-blue-700 disabled:bg-blue-400 text-white font-semibold py-2.5 px-4 rounded-xl transition-colors text-sm shadow-sm">
+          <button
+            type="submit"
+            disabled={loading}
+            className="flex-1 bg-blue-600 hover:bg-blue-700 disabled:bg-blue-400 text-white font-semibold py-2.5 px-4 rounded-xl transition-colors text-sm shadow-sm"
+          >
             {loading ? "שומר..." : "צור משימה"}
           </button>
-          <Link href="/manager/tasks" className="px-4 py-2.5 rounded-xl border border-slate-200 text-slate-600 hover:bg-slate-50 transition-colors text-sm font-medium">
+          <Link href="/manager/tasks" className="px-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-600 text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors text-sm font-medium">
             ביטול
           </Link>
         </div>
