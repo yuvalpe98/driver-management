@@ -8,10 +8,11 @@ import NotificationToggle from "@/components/ui/NotificationToggle";
 
 const links = [
   { href: "/manager/dashboard", label: "לוח בקרה" },
-  { href: "/manager/drivers", label: "נהגים" },
-  { href: "/manager/tasks", label: "משימות" },
+  { href: "/manager/drivers",   label: "נהגים" },
+  { href: "/manager/tasks",     label: "משימות" },
+  { href: "/manager/deliveries", label: "יומן מסירות" },
   { href: "/manager/inventory", label: "מלאי" },
-  { href: "/manager/catalog", label: "קטלוג" },
+  { href: "/manager/catalog",   label: "קטלוג" },
 ];
 
 interface NavbarProps {
