@@ -8,11 +8,11 @@ export async function GET() {
   if (error || !session) return error;
 
   if (session.user.role === "MANAGER") {
-    // Manager sees all drivers' equipment grouped
     const equipment = await prisma.equipment.findMany({
-      orderBy: [{ driverId: "asc" }, { name: "asc" }],
+      orderBy: [{ driverId: "asc" }, { catalogItem: { name: "asc" } }],
       select: {
-        id: true, name: true, status: true, notes: true, updatedAt: true,
+        id: true, status: true, notes: true, updatedAt: true,
+        catalogItem: { select: { name: true } },
         driver: { select: { id: true, name: true } },
       },
     });
@@ -22,8 +22,11 @@ export async function GET() {
   // Driver sees only their own equipment
   const equipment = await prisma.equipment.findMany({
     where: { driverId: session.user.id },
-    orderBy: { name: "asc" },
-    select: { id: true, name: true, status: true, notes: true, updatedAt: true },
+    orderBy: { catalogItem: { name: "asc" } },
+    select: {
+      id: true, status: true, notes: true, updatedAt: true,
+      catalogItem: { select: { name: true } },
+    },
   });
   return NextResponse.json(equipment);
 }
@@ -32,28 +35,42 @@ export async function POST(req: Request) {
   const { error, session } = await requireAuth();
   if (error || !session) return error;
 
-  // Both drivers and managers can add equipment; drivers only for themselves
-  const driverId = session.user.role === "DRIVER" ? session.user.id : null;
-  if (!driverId) {
-    return NextResponse.json({ error: "מנהלים לא מוסיפים ציוד ישירות" }, { status: 403 });
-  }
-
   const body = await req.json().catch(() => null);
   const parsed = createEquipmentSchema.safeParse(body);
-  if (!parsed.success) {
-    return NextResponse.json({ error: "שם ציוד לא תקין" }, { status: 400 });
+  if (!parsed.success)
+    return NextResponse.json({ error: "נתונים לא תקינים" }, { status: 400 });
+
+  const { catalogItemId } = parsed.data;
+
+  // Determine driverId
+  let driverId: string;
+  if (session.user.role === "DRIVER") {
+    driverId = session.user.id;
+  } else {
+    // Manager must supply driverId
+    if (!parsed.data.driverId)
+      return NextResponse.json({ error: "יש לציין נהג" }, { status: 400 });
+    driverId = parsed.data.driverId;
   }
 
-  const existing = await prisma.equipment.findFirst({
-    where: { driverId, name: { equals: parsed.data.name, mode: "insensitive" } },
-  });
-  if (existing) {
-    return NextResponse.json({ error: "פריט ציוד זה כבר קיים ברשימה" }, { status: 409 });
-  }
+  // Validate the catalog item exists and is EQUIPMENT category
+  const catalogItem = await prisma.catalogItem.findUnique({ where: { id: catalogItemId } });
+  if (!catalogItem)
+    return NextResponse.json({ error: "פריט קטלוג לא נמצא" }, { status: 404 });
+  if (catalogItem.category !== "EQUIPMENT")
+    return NextResponse.json({ error: "פריט זה הוא מלאי, לא ציוד" }, { status: 400 });
+
+  // Block duplicate: same catalog item already tracked for this driver
+  const existing = await prisma.equipment.findFirst({ where: { driverId, catalogItemId } });
+  if (existing)
+    return NextResponse.json({ error: "פריט ציוד זה כבר קיים ברשימת הנהג" }, { status: 409 });
 
   const item = await prisma.equipment.create({
-    data: { name: parsed.data.name, driverId, status: "GOOD" },
-    select: { id: true, name: true, status: true },
+    data: { catalogItemId, driverId, status: "GOOD" },
+    select: {
+      id: true, status: true,
+      catalogItem: { select: { name: true } },
+    },
   });
 
   return NextResponse.json(item, { status: 201 });

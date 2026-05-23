@@ -44,9 +44,9 @@ export async function POST(req: Request) {
   if (items && items.length > 0) {
     const inventory = await prisma.inventoryItem.findMany({
       where: { driverId: assignedDriverId },
-      select: { name: true, quantity: true },
+      select: { quantity: true, catalogItem: { select: { name: true } } },
     });
-    const inventoryMap = new Map(inventory.map((i) => [i.name, i.quantity]));
+    const inventoryMap = new Map(inventory.map((i) => [i.catalogItem.name, i.quantity]));
 
     const shortages = items.filter((item) => (inventoryMap.get(item.name) ?? 0) < item.quantity);
     if (shortages.length > 0) {

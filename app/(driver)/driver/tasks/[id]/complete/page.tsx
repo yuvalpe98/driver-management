@@ -13,15 +13,15 @@ export default async function CompleteTaskPage({
   const { id } = await params;
 
   // SECURITY: ownership check
-  const [task, equipment] = await Promise.all([
+  const [task, rawEquipment] = await Promise.all([
     prisma.task.findUnique({
       where: { id, assignedDriverId: driverId },
       select: { id: true, title: true, deliveryAddress: true, status: true },
     }),
     prisma.equipment.findMany({
       where: { driverId },
-      orderBy: { name: "asc" },
-      select: { id: true, name: true, status: true },
+      orderBy: { catalogItem: { name: "asc" } },
+      select: { id: true, status: true, catalogItem: { select: { name: true } } },
     }),
   ]);
 
@@ -29,9 +29,11 @@ export default async function CompleteTaskPage({
     notFound();
   }
 
+  // Flatten to shape CompleteTaskForm expects: { id, name, status }
+  const equipment = rawEquipment.map((e) => ({ id: e.id, name: e.catalogItem.name, status: e.status }));
+
   return (
     <div className="space-y-6">
-      {/* Task context */}
       <div className="bg-blue-50 border border-blue-100 rounded-2xl px-5 py-4">
         <p className="text-xs text-blue-500 font-medium mb-1">משלוח שמסתיים</p>
         <p className="font-bold text-blue-900">{task.title}</p>

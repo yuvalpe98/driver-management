@@ -23,14 +23,16 @@ export async function PATCH(
 
   const body = await req.json().catch(() => null);
   const parsed = updateEquipmentSchema.safeParse(body);
-  if (!parsed.success) {
+  if (!parsed.success)
     return NextResponse.json({ error: "נתונים לא תקינים" }, { status: 400 });
-  }
 
   const updated = await prisma.equipment.update({
     where: { id },
     data: { status: parsed.data.status, notes: parsed.data.notes ?? item.notes },
-    select: { id: true, status: true, notes: true },
+    select: {
+      id: true, status: true, notes: true,
+      catalogItem: { select: { name: true } },
+    },
   });
 
   return NextResponse.json(updated);

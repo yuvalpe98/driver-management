@@ -45,16 +45,25 @@ export const updateTaskStatusSchema = z.object({
   status: z.enum(["IN_PROGRESS", "CANCELLED"]),
 });
 
-export const createInventoryItemSchema = z.object({
-  driverId: z.string().uuid().optional(),
+export const createCatalogItemSchema = z.object({
   name: z.string().min(1).max(100),
-  quantity: z.number().int().min(0),
+  category: z.enum(["INVENTORY", "EQUIPMENT"]),
   unit: z.string().max(20).optional(),
+});
+
+export const updateCatalogItemSchema = z.object({
+  name: z.string().min(1).max(100).optional(),
+  unit: z.string().max(20).optional().nullable(),
+});
+
+export const createInventoryItemSchema = z.object({
+  catalogItemId: z.string().uuid(),
+  quantity: z.number().int().min(0),
+  driverId: z.string().uuid().optional(), // manager must supply; driver uses their own id
 });
 
 export const updateInventoryItemSchema = z.object({
   quantity: z.number().int().min(0).optional(),
-  unit: z.string().max(20).optional(),
 });
 
 export const updateDriverSchema = z.object({
@@ -66,7 +75,8 @@ export const updateDriverSchema = z.object({
 });
 
 export const createEquipmentSchema = z.object({
-  name: z.string().min(2).max(100),
+  catalogItemId: z.string().uuid(),
+  driverId: z.string().uuid().optional(), // manager can supply a specific driver
 });
 
 export const updateEquipmentSchema = z.object({

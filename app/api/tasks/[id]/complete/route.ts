@@ -72,10 +72,14 @@ export async function POST(
         data: { status: eq.status },
       })
     ),
-    // Deduct each delivered item from driver's inventory (best-effort: floor at 0)
+    // Deduct each delivered item from driver's inventory (best-effort: match by catalog name)
     ...taskItems.map((item) =>
       prisma.inventoryItem.updateMany({
-        where: { driverId, name: item.name, quantity: { gte: item.quantity } },
+        where: {
+          driverId,
+          quantity: { gte: item.quantity },
+          catalogItem: { name: item.name },
+        },
         data: { quantity: { decrement: item.quantity } },
       })
     ),

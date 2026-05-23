@@ -7,34 +7,40 @@ export default async function DriverInventoryPage() {
   const session = await auth();
   const driverId = session!.user.id;
 
-  const [equipment, items] = await Promise.all([
+  const [rawEquipment, rawItems] = await Promise.all([
     prisma.equipment.findMany({
       where: { driverId },
-      orderBy: { name: "asc" },
-      select: { id: true, name: true, status: true, notes: true, updatedAt: true },
+      orderBy: { catalogItem: { name: "asc" } },
+      select: { id: true, status: true, notes: true, updatedAt: true, catalogItem: { select: { name: true } } },
     }),
     prisma.inventoryItem.findMany({
       where: { driverId },
-      orderBy: { name: "asc" },
-      select: { id: true, name: true, quantity: true, unit: true },
+      orderBy: { catalogItem: { name: "asc" } },
+      select: { id: true, quantity: true, updatedAt: true, catalogItem: { select: { name: true, unit: true } } },
     }),
   ]);
 
+  // Flatten catalogItem into the shape existing components expect
+  const equipment = rawEquipment.map((e) => ({ ...e, name: e.catalogItem.name }));
+  const items = rawItems.map((i) => ({
+    ...i,
+    name: i.catalogItem.name,
+    unit: i.catalogItem.unit ?? "יחידות",
+    updatedAt: i.updatedAt.toISOString(),
+  }));
+
   return (
     <div className="space-y-8">
-      {/* Header */}
       <div>
         <h1 className="text-2xl font-bold text-slate-800 dark:text-slate-100">מלאי וציוד</h1>
         <p className="text-slate-500 dark:text-slate-400 text-sm mt-1">סטטוס ציוד ופריטי מלאי ברכב שלך</p>
       </div>
 
-      {/* ── Section 1: Equipment health ── */}
       <section className="space-y-4">
         <h2 className="text-lg font-semibold text-slate-700 dark:text-slate-200">ציוד</h2>
         <EquipmentList initialItems={equipment} />
       </section>
 
-      {/* ── Section 2: Inventory quantities ── */}
       <section className="space-y-4">
         <h2 className="text-lg font-semibold text-slate-700 dark:text-slate-200">מלאי ({items.length} פריטים)</h2>
         <DriverInventoryManager initialItems={items} />

@@ -5,7 +5,10 @@ import { sendPush } from "@/lib/push";
 import { NextResponse } from "next/server";
 
 async function resolveItem(id: string, userId: string, role: string) {
-  const item = await prisma.inventoryItem.findUnique({ where: { id } });
+  const item = await prisma.inventoryItem.findUnique({
+    where: { id },
+    include: { catalogItem: { select: { name: true, unit: true } } },
+  });
   if (!item) return { item: null, forbidden: false };
   if (role === "DRIVER" && item.driverId !== userId) return { item: null, forbidden: true };
   return { item, forbidden: false };
@@ -28,8 +31,8 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
     where: { id },
     data: {
       ...(parsed.data.quantity !== undefined && { quantity: parsed.data.quantity }),
-      ...(parsed.data.unit !== undefined && { unit: parsed.data.unit }),
     },
+    include: { catalogItem: { select: { name: true, unit: true } } },
   });
 
   // Notify all managers if quantity dropped to low-stock threshold
@@ -38,10 +41,12 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
       where: { role: "MANAGER", isActive: true },
       select: { id: true },
     });
+    const itemName = updated.catalogItem.name;
+    const itemUnit = updated.catalogItem.unit ?? "יחידות";
     managers.forEach((m) =>
       sendPush(m.id, {
         title: "מלאי נמוך",
-        body: `${updated.name} — נותרו ${updated.quantity} יחידות`,
+        body: `${itemName} — נותרו ${updated.quantity} ${itemUnit}`,
         url: "/manager/inventory",
       }).catch(() => {})
     );

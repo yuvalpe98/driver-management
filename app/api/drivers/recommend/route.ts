@@ -26,7 +26,7 @@ export async function GET(req: Request) {
       id: true,
       name: true,
       phone: true,
-      inventory: { select: { name: true, quantity: true } },
+      inventory: { select: { quantity: true, catalogItem: { select: { name: true } } } },
       assignedTasks: {
         where: { status: { in: ["PENDING", "IN_PROGRESS"] } },
         select: { deliveryAddress: true },
@@ -40,7 +40,7 @@ export async function GET(req: Request) {
   const results = await Promise.all(
     drivers.map(async (driver) => {
       // Check inventory sufficiency
-      const inventoryMap = new Map(driver.inventory.map((i) => [i.name, i.quantity]));
+      const inventoryMap = new Map(driver.inventory.map((i) => [i.catalogItem.name, i.quantity]));
       const hasAllItems = requestedItems.every(
         (req) => (inventoryMap.get(req.name) ?? 0) >= req.quantity
       );
