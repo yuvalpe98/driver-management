@@ -33,6 +33,8 @@ const SignatureCanvas = forwardRef<SignatureCanvasRef>((_, ref) => {
 
     function resize() {
       if (!canvas || !pad) return;
+      // Skip if the canvas has no visible size yet
+      if (canvas.offsetWidth === 0 || canvas.offsetHeight === 0) return;
       const ratio = Math.max(window.devicePixelRatio || 1, 1);
       const data = pad.toData();
       canvas.width = canvas.offsetWidth * ratio;
@@ -43,10 +45,14 @@ const SignatureCanvas = forwardRef<SignatureCanvasRef>((_, ref) => {
       if (data.length > 0) pad.fromData(data);
     }
 
-    resize();
-    window.addEventListener("resize", resize);
+    // ResizeObserver fires after the element is actually laid out in the DOM,
+    // so offsetWidth/offsetHeight are always real values — unlike calling resize()
+    // synchronously on mount where they would still be 0.
+    const observer = new ResizeObserver(() => resize());
+    observer.observe(canvas);
+
     return () => {
-      window.removeEventListener("resize", resize);
+      observer.disconnect();
       pad.off();
     };
   }, []);
