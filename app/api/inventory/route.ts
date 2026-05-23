@@ -3,7 +3,7 @@ import { prisma } from "@/lib/prisma";
 import { createInventoryItemSchema } from "@/lib/validations";
 import { NextResponse } from "next/server";
 
-const catalogSelect = { select: { name: true, unit: true, category: true } } as const;
+const catalogSelect = { select: { name: true, unit: true, category: true, minThreshold: true } } as const;
 
 export async function GET(req: Request) {
   const { error, session } = await requireAuth();

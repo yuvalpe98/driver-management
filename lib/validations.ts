@@ -49,11 +49,13 @@ export const createCatalogItemSchema = z.object({
   name: z.string().min(1).max(100),
   category: z.enum(["INVENTORY", "EQUIPMENT"]),
   unit: z.string().max(20).optional(),
+  minThreshold: z.number().int().min(0).optional().default(0),
 });
 
 export const updateCatalogItemSchema = z.object({
   name: z.string().min(1).max(100).optional(),
   unit: z.string().max(20).optional().nullable(),
+  minThreshold: z.number().int().min(0).optional(),
 });
 
 export const createInventoryItemSchema = z.object({

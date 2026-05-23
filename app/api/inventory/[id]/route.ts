@@ -7,7 +7,7 @@ import { NextResponse } from "next/server";
 async function resolveItem(id: string, userId: string, role: string) {
   const item = await prisma.inventoryItem.findUnique({
     where: { id },
-    include: { catalogItem: { select: { name: true, unit: true } } },
+    include: { catalogItem: { select: { name: true, unit: true, minThreshold: true } } },
   });
   if (!item) return { item: null, forbidden: false };
   if (role === "DRIVER" && item.driverId !== userId) return { item: null, forbidden: true };
@@ -32,11 +32,15 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
     data: {
       ...(parsed.data.quantity !== undefined && { quantity: parsed.data.quantity }),
     },
-    include: { catalogItem: { select: { name: true, unit: true } } },
+    include: { catalogItem: { select: { name: true, unit: true, minThreshold: true } } },
   });
 
-  // Notify all managers if quantity dropped to low-stock threshold
-  if (parsed.data.quantity !== undefined && parsed.data.quantity <= 2) {
+  // Notify all managers if quantity dropped to or below the item's dynamic threshold
+  if (
+    parsed.data.quantity !== undefined &&
+    item.catalogItem.minThreshold > 0 &&
+    parsed.data.quantity <= item.catalogItem.minThreshold
+  ) {
     const managers = await prisma.user.findMany({
       where: { role: "MANAGER", isActive: true },
       select: { id: true },

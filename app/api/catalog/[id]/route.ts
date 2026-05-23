@@ -21,7 +21,7 @@ export async function PATCH(
   if (!parsed.success)
     return NextResponse.json({ error: "נתונים לא תקינים" }, { status: 400 });
 
-  const { name, unit } = parsed.data;
+  const { name, unit, minThreshold } = parsed.data;
 
   // Check for name uniqueness if changing it
   if (name && name !== item.name) {
@@ -33,6 +33,7 @@ export async function PATCH(
   const data: Record<string, unknown> = {};
   if (name) data["name"] = name;
   if (unit !== undefined) data["unit"] = unit ?? null;
+  if (minThreshold !== undefined) data["minThreshold"] = minThreshold;
 
   const updated = await prisma.catalogItem.update({ where: { id }, data });
   return NextResponse.json(updated);

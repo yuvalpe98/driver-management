@@ -12,6 +12,7 @@ interface CatalogItem {
   name: string;
   category: Category;
   unit: string | null;
+  minThreshold: number;
   _count: { inventoryItems: number; equipment: number };
 }
 
@@ -33,6 +34,7 @@ function AddForm({ onAdded }: { onAdded: (item: CatalogItem) => void }) {
   const [name, setName] = useState("");
   const [category, setCategory] = useState<Category>("INVENTORY");
   const [unit, setUnit] = useState("יחידות");
+  const [minThreshold, setMinThreshold] = useState(0);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
@@ -48,6 +50,7 @@ function AddForm({ onAdded }: { onAdded: (item: CatalogItem) => void }) {
         name: name.trim(),
         category,
         unit: category === "INVENTORY" ? unit.trim() || "יחידות" : undefined,
+        minThreshold: category === "INVENTORY" ? minThreshold : 0,
       }),
     });
 
@@ -57,7 +60,7 @@ function AddForm({ onAdded }: { onAdded: (item: CatalogItem) => void }) {
     if (!res.ok) { setError(data.error ?? "שגיאה"); return; }
 
     onAdded({ ...data, _count: { inventoryItems: 0, equipment: 0 } });
-    setName(""); setCategory("INVENTORY"); setUnit("יחידות"); setShow(false);
+    setName(""); setCategory("INVENTORY"); setUnit("יחידות"); setMinThreshold(0); setShow(false);
   }
 
   if (!show) {
@@ -122,6 +125,21 @@ function AddForm({ onAdded }: { onAdded: (item: CatalogItem) => void }) {
             </FormField>
           </div>
         )}
+
+        {category === "INVENTORY" && (
+          <div className="sm:col-span-1">
+            <FormField label="סף מינימום להתראה">
+              <input
+                type="number"
+                min={0}
+                className={inputClass}
+                placeholder="0"
+                value={minThreshold}
+                onChange={(e) => setMinThreshold(parseInt(e.target.value) || 0)}
+              />
+            </FormField>
+          </div>
+        )}
       </div>
 
       {error && (
@@ -163,6 +181,7 @@ function EditRow({
 }) {
   const [name, setName] = useState(item.name);
   const [unit, setUnit] = useState(item.unit ?? "יחידות");
+  const [minThreshold, setMinThreshold] = useState(item.minThreshold);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
@@ -175,17 +194,18 @@ function EditRow({
       body: JSON.stringify({
         name: name.trim(),
         unit: item.category === "INVENTORY" ? unit.trim() || null : null,
+        minThreshold: item.category === "INVENTORY" ? minThreshold : 0,
       }),
     });
     const data = await res.json();
     setLoading(false);
     if (!res.ok) { setError(data.error ?? "שגיאה"); return; }
-    onSaved({ ...item, name: data.name, unit: data.unit });
+    onSaved({ ...item, name: data.name, unit: data.unit, minThreshold: data.minThreshold });
   }
 
   return (
     <tr className="bg-blue-50 dark:bg-blue-900/20">
-      <td className="px-6 py-3" colSpan={4}>
+      <td className="px-6 py-3" colSpan={5}>
         <div className="flex items-center gap-3 flex-wrap">
           <input
             type="text"
@@ -200,8 +220,20 @@ function EditRow({
               value={unit}
               onChange={(e) => setUnit(e.target.value)}
               placeholder="יחידת מידה"
-              className="w-28 px-3 py-1.5 rounded-lg border border-blue-300 dark:border-blue-600 bg-white dark:bg-slate-700 text-sm text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-24 px-3 py-1.5 rounded-lg border border-blue-300 dark:border-blue-600 bg-white dark:bg-slate-700 text-sm text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-blue-500"
             />
+          )}
+          {item.category === "INVENTORY" && (
+            <div className="flex items-center gap-1.5">
+              <span className="text-xs text-slate-500 dark:text-slate-400 whitespace-nowrap">סף:</span>
+              <input
+                type="number"
+                min={0}
+                value={minThreshold}
+                onChange={(e) => setMinThreshold(parseInt(e.target.value) || 0)}
+                className="w-16 text-center px-2 py-1.5 rounded-lg border border-blue-300 dark:border-blue-600 bg-white dark:bg-slate-700 text-sm text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              />
+            </div>
           )}
           {error && <span className="text-red-600 text-xs">{error}</span>}
           <div className="flex gap-2">
@@ -221,7 +253,6 @@ function EditRow({
           </div>
         </div>
       </td>
-      <td />
     </tr>
   );
 }
@@ -328,6 +359,7 @@ export default function CatalogManager({ initialItems }: { initialItems: Catalog
                 <th className="text-right px-6 py-3 font-medium">שם הפריט</th>
                 <th className="text-right px-6 py-3 font-medium">קטגוריה</th>
                 <th className="text-right px-6 py-3 font-medium hidden sm:table-cell">יחידה</th>
+                <th className="text-right px-6 py-3 font-medium hidden sm:table-cell">סף התראה</th>
                 <th className="text-right px-6 py-3 font-medium hidden md:table-cell">שימוש</th>
                 <th className="px-6 py-3" />
               </tr>
@@ -362,6 +394,21 @@ export default function CatalogManager({ initialItems }: { initialItems: Catalog
                     {/* Unit */}
                     <td className="px-6 py-4 text-slate-500 dark:text-slate-400 hidden sm:table-cell">
                       {item.category === "INVENTORY" ? (item.unit ?? "יחידות") : "—"}
+                    </td>
+
+                    {/* Min threshold */}
+                    <td className="px-6 py-4 hidden sm:table-cell">
+                      {item.category === "INVENTORY" ? (
+                        item.minThreshold > 0 ? (
+                          <span className="text-orange-600 dark:text-orange-400 font-medium text-sm">
+                            ≤ {item.minThreshold}
+                          </span>
+                        ) : (
+                          <span className="text-slate-300 dark:text-slate-600 text-xs">ללא</span>
+                        )
+                      ) : (
+                        <span className="text-slate-300 dark:text-slate-600 text-xs">—</span>
+                      )}
                     </td>
 
                     {/* Usage count */}

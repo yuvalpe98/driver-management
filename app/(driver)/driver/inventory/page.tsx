@@ -23,12 +23,12 @@ export default async function DriverInventoryPage() {
       select: {
         id: true, quantity: true, updatedAt: true,
         catalogItemId: true,
-        catalogItem: { select: { name: true, unit: true } },
+        catalogItem: { select: { name: true, unit: true, minThreshold: true } },
       },
     }),
     prisma.catalogItem.findMany({
       orderBy: { name: "asc" },
-      select: { id: true, name: true, category: true, unit: true },
+      select: { id: true, name: true, category: true, unit: true, minThreshold: true },
     }),
   ]);
 
@@ -46,6 +46,7 @@ export default async function DriverInventoryPage() {
     id: i.id,
     name: i.catalogItem.name,
     unit: i.catalogItem.unit ?? "יחידות",
+    minThreshold: i.catalogItem.minThreshold,
     quantity: i.quantity,
     updatedAt: i.updatedAt.toISOString(),
     catalogItemId: i.catalogItemId,
@@ -61,7 +62,7 @@ export default async function DriverInventoryPage() {
 
   const availableInventory = catalogItems
     .filter((c) => c.category === "INVENTORY" && !usedInventoryIds.has(c.id))
-    .map((c) => ({ id: c.id, name: c.name, unit: c.unit }));
+    .map((c) => ({ id: c.id, name: c.name, unit: c.unit, minThreshold: c.minThreshold }));
 
   return (
     <div className="space-y-8">

@@ -35,14 +35,14 @@ export async function POST(req: Request) {
   if (!parsed.success)
     return NextResponse.json({ error: "נתונים לא תקינים" }, { status: 400 });
 
-  const { name, category, unit } = parsed.data;
+  const { name, category, unit, minThreshold } = parsed.data;
 
   const existing = await prisma.catalogItem.findUnique({ where: { name } });
   if (existing)
     return NextResponse.json({ error: "פריט עם שם זה כבר קיים בקטלוג" }, { status: 409 });
 
   const item = await prisma.catalogItem.create({
-    data: { name, category, unit: unit ?? null },
+    data: { name, category, unit: unit ?? null, minThreshold: minThreshold ?? 0 },
   });
 
   return NextResponse.json(item, { status: 201 });

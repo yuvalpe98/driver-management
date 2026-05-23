@@ -8,12 +8,14 @@ interface Item {
   name: string;
   quantity: number;
   unit: string;
+  minThreshold: number;
 }
 
 interface CatalogItem {
   id: string;
   name: string;
   unit: string | null;
+  minThreshold: number;
 }
 
 interface Props {
@@ -39,7 +41,7 @@ export default function DriverInventoryManager({ initialItems, availableCatalogI
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
-  const lowCount = items.filter((i) => i.quantity <= 2).length;
+  const lowCount = items.filter((i) => i.minThreshold > 0 && i.quantity <= i.minThreshold).length;
   const selectedCatalog = available.find((c) => c.id === selectedCatalogId);
 
   // ── Add from catalog ──────────────────────────────────────────────────────
@@ -65,6 +67,7 @@ export default function DriverInventoryManager({ initialItems, availableCatalogI
       id: data.id,
       name: data.catalogItem.name,
       unit: data.catalogItem.unit ?? "יחידות",
+      minThreshold: data.catalogItem.minThreshold ?? 0,
       quantity: data.quantity,
     };
     setItems((prev) => [...prev, added].sort((a, b) => a.name.localeCompare(b.name, "he")));
@@ -174,11 +177,11 @@ export default function DriverInventoryManager({ initialItems, availableCatalogI
                   </div>
                 ) : (
                   <div className="flex items-center gap-3">
-                    <span className={`text-sm font-bold ${item.quantity <= 2 ? "text-red-600" : "text-slate-800 dark:text-slate-100"}`}>
+                    <span className={`text-sm font-bold ${item.minThreshold > 0 && item.quantity <= item.minThreshold ? "text-red-600" : "text-slate-800 dark:text-slate-100"}`}>
                       {item.quantity}
                     </span>
                     <span className="text-xs text-slate-400 dark:text-slate-500">{item.unit}</span>
-                    {item.quantity <= 2 && (
+                    {item.minThreshold > 0 && item.quantity <= item.minThreshold && (
                       <span className="text-xs text-red-500 font-medium">נמוך</span>
                     )}
                     <button

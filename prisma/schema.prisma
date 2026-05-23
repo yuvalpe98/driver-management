@@ -108,12 +108,13 @@ model TaskItem {
 }
 
 model CatalogItem {
-  id        String          @id @default(uuid())
-  name      String          @unique
-  category  CatalogCategory
-  unit      String?                          // only relevant for INVENTORY items
-  createdAt DateTime        @default(now())
-  updatedAt DateTime        @updatedAt
+  id           String          @id @default(uuid())
+  name         String          @unique
+  category     CatalogCategory
+  unit         String?                          // only relevant for INVENTORY items
+  minThreshold Int             @default(0)      // alert when driver quantity ≤ this; 0 = no alert
+  createdAt    DateTime        @default(now())
+  updatedAt    DateTime        @updatedAt
 
   inventoryItems InventoryItem[]
   equipment      Equipment[]
