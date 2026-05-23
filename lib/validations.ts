@@ -31,6 +31,16 @@ export const updateLabPartSchema = z.object({
   isActive: z.boolean().optional(),
 });
 
+export const createLabReleaseLogSchema = z.object({
+  serialNumber:    z.string().min(1).max(200),
+  technicianId:    z.string().uuid(),
+  date:            z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "תאריך לא תקין"),
+  workingHours:    z.number().int().min(0).max(999_999),
+  customerType:    z.enum(["OCCASIONAL_CUSTOMER", "CLALIT_ENGINEERING"]),
+  partIds:         z.array(z.string().uuid()),
+  isInspectionOnly: z.boolean(),
+});
+
 export const createTaskItemSchema = z.object({
   name: z.string().min(1).max(100),
   quantity: z.number().int().positive(),
