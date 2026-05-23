@@ -1,5 +1,6 @@
 import { auth } from "@/lib/auth";
 import { redirect } from "next/navigation";
+import LabSignOutButton from "./LabSignOutButton";
 
 /**
  * Lab route group layout — accessible to LAB_USER only.
@@ -25,7 +26,10 @@ export default async function LabLayout({ children }: { children: React.ReactNod
             <span className="font-bold text-slate-800 dark:text-slate-100 text-sm">מעבדת ריכוזי חמצן</span>
           </div>
 
-          <span className="text-xs text-slate-500 dark:text-slate-400">{session.user.name}</span>
+          <div className="flex items-center gap-2">
+            <span className="text-xs text-slate-500 dark:text-slate-400 hidden sm:block">{session.user.name}</span>
+            <LabSignOutButton />
+          </div>
         </div>
       </header>
 
