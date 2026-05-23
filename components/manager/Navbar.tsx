@@ -11,6 +11,7 @@ const links = [
   { href: "/manager/drivers", label: "נהגים" },
   { href: "/manager/tasks", label: "משימות" },
   { href: "/manager/inventory", label: "מלאי" },
+  { href: "/manager/catalog", label: "קטלוג" },
 ];
 
 interface NavbarProps {
