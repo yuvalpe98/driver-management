@@ -1,7 +1,6 @@
 import { requireRole } from "@/lib/auth-guard";
 import { prisma } from "@/lib/prisma";
 import { completeTaskSchema } from "@/lib/validations";
-import { uploadSignature } from "@/lib/cloudinary";
 import { sendPush } from "@/lib/push";
 import { NextResponse } from "next/server";
 
@@ -41,12 +40,10 @@ export async function POST(
     }
   }
 
-  let signatureImageUrl: string;
-  try {
-    signatureImageUrl = await uploadSignature(signatureBase64);
-  } catch {
-    return NextResponse.json({ error: "שגיאה בשמירת החתימה" }, { status: 500 });
-  }
+  // Store the signature base64 data URI directly — no external upload needed.
+  const signatureImageUrl = signatureBase64.startsWith("data:")
+    ? signatureBase64
+    : `data:image/png;base64,${signatureBase64}`;
 
   const now = new Date();
 

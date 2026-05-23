@@ -1,21 +1,8 @@
-import { v2 as cloudinary } from "cloudinary";
-
-cloudinary.config({
-  cloud_name: process.env["CLOUDINARY_CLOUD_NAME"] as string,
-  api_key:    process.env["CLOUDINARY_API_KEY"] as string,
-  api_secret: process.env["CLOUDINARY_API_SECRET"] as string,
-  secure:     true,
-});
-
+/**
+ * Signature "storage" — we store the base64 data URI directly in the database
+ * instead of uploading to an external service. The DB column is a plain TEXT
+ * field and Next.js <Image unoptimized> renders data URIs just fine.
+ */
 export async function uploadSignature(base64: string): Promise<string> {
-  const dataUri = base64.startsWith("data:") ? base64 : `data:image/png;base64,${base64}`;
-
-  const result = await cloudinary.uploader.upload(dataUri, {
-    folder:         "driver-signatures",
-    resource_type:  "image",
-    format:         "png",
-    type:           "authenticated", // private — not publicly guessable
-  });
-
-  return result.secure_url;
+  return base64.startsWith("data:") ? base64 : `data:image/png;base64,${base64}`;
 }
