@@ -29,8 +29,8 @@ export default function LoginPage() {
       return;
     }
 
-    // Middleware will redirect to the correct dashboard based on role
-    router.push("/driver/dashboard");
+    // Root page reads the session and dispatches to the correct dashboard
+    router.push("/");
     router.refresh();
   }
 

@@ -5,7 +5,7 @@ import Navbar from "@/components/manager/Navbar";
 export default async function ManagerLayout({ children }: { children: React.ReactNode }) {
   const session = await auth();
   if (!session) redirect("/login");
-  if (session.user.role !== "MANAGER") redirect("/driver/dashboard");
+  if (session.user.role !== "MANAGER") redirect("/");
 
   return (
     <div className="min-h-screen bg-slate-50 dark:bg-slate-900">

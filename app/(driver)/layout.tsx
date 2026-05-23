@@ -5,7 +5,7 @@ import DriverNavbar from "@/components/driver/DriverNavbar";
 export default async function DriverLayout({ children }: { children: React.ReactNode }) {
   const session = await auth();
   if (!session) redirect("/login");
-  if (session.user.role !== "DRIVER") redirect("/manager/dashboard");
+  if (session.user.role !== "DRIVER") redirect("/");
 
   return (
     <div className="min-h-screen bg-slate-50 dark:bg-slate-900">
