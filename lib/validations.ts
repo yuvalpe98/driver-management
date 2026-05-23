@@ -28,17 +28,18 @@ export const createTaskSchema = z.object({
   items: z.array(createTaskItemSchema).optional(),
 });
 
+// One entry per TaskItem: the item's DB id + the list of scanned serial numbers
+export const serialGroupSchema = z.object({
+  taskItemId: z.string().uuid(),
+  serials: z.array(z.string().min(1).max(200)),
+});
+
 export const completeTaskSchema = z.object({
   recipientName: z.string().min(2).max(100),
   signatureBase64: z.string().min(1).max(500_000),
-  equipmentUpdates: z
-    .array(
-      z.object({
-        id: z.string().uuid(),
-        status: z.enum(["GOOD", "NEEDS_REPAIR", "MISSING"]),
-      })
-    )
-    .optional(),
+  // serials is optional here so Step 3 stays backward-compatible until the
+  // Step 4 UI is deployed.  When provided, the API validates count & uniqueness.
+  serials: z.array(serialGroupSchema).optional(),
 });
 
 export const updateTaskStatusSchema = z.object({
