@@ -12,25 +12,15 @@ export default async function CompleteTaskPage({
   const driverId = session!.user.id;
   const { id } = await params;
 
-  // SECURITY: ownership check
-  const [task, rawEquipment] = await Promise.all([
-    prisma.task.findUnique({
-      where: { id, assignedDriverId: driverId },
-      select: { id: true, title: true, deliveryAddress: true, status: true },
-    }),
-    prisma.equipment.findMany({
-      where: { driverId },
-      orderBy: { catalogItem: { name: "asc" } },
-      select: { id: true, status: true, catalogItem: { select: { name: true } } },
-    }),
-  ]);
+  // SECURITY: ownership check — driver can only complete their own tasks
+  const task = await prisma.task.findUnique({
+    where: { id, assignedDriverId: driverId },
+    select: { id: true, title: true, deliveryAddress: true, status: true },
+  });
 
   if (!task || task.status === "COMPLETED" || task.status === "CANCELLED") {
     notFound();
   }
-
-  // Flatten to shape CompleteTaskForm expects: { id, name, status }
-  const equipment = rawEquipment.map((e) => ({ id: e.id, name: e.catalogItem.name, status: e.status }));
 
   return (
     <div className="space-y-6">
@@ -40,7 +30,7 @@ export default async function CompleteTaskPage({
         <p className="text-blue-600 text-sm mt-0.5">{task.deliveryAddress}</p>
       </div>
 
-      <CompleteTaskForm taskId={task.id} equipment={equipment} />
+      <CompleteTaskForm taskId={task.id} />
     </div>
   );
 }

@@ -5,49 +5,14 @@ import { useRouter } from "next/navigation";
 import SignatureCanvas, { SignatureCanvasRef } from "@/components/driver/SignatureCanvas";
 import Link from "next/link";
 
-type EquipmentStatus = "GOOD" | "NEEDS_REPAIR" | "MISSING";
-
-interface EquipmentItem {
-  id: string;
-  name: string;
-  status: EquipmentStatus;
-}
-
-const statusConfig: Record<EquipmentStatus, { label: string; color: string; icon: string }> = {
-  GOOD:         { label: "תקין",        color: "bg-green-100 text-green-700 ring-green-300",   icon: "✅" },
-  NEEDS_REPAIR: { label: "דורש תיקון", color: "bg-yellow-100 text-yellow-700 ring-yellow-300", icon: "⚠️" },
-  MISSING:      { label: "חסר",         color: "bg-red-100 text-red-700 ring-red-300",          icon: "❌" },
-};
-
-const statusCycle: EquipmentStatus[] = ["GOOD", "NEEDS_REPAIR", "MISSING"];
-
-export default function CompleteTaskForm({
-  taskId,
-  equipment,
-}: {
-  taskId: string;
-  equipment: EquipmentItem[];
-}) {
+export default function CompleteTaskForm({ taskId }: { taskId: string }) {
   const router = useRouter();
   const sigRef = useRef<SignatureCanvasRef>(null);
 
   const [recipientName, setRecipientName] = useState("");
-  const [equipmentStatuses, setEquipmentStatuses] = useState<Record<string, EquipmentStatus>>(
-    Object.fromEntries(equipment.map((e) => [e.id, e.status]))
-  );
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const [done, setDone] = useState(false);
-
-  function cycleStatus(id: string) {
-    setEquipmentStatuses((prev) => {
-      const current = prev[id] ?? "GOOD";
-      const next = statusCycle[(statusCycle.indexOf(current) + 1) % statusCycle.length] as EquipmentStatus;
-      return { ...prev, [id]: next };
-    });
-  }
-
-  const issueCount = Object.values(equipmentStatuses).filter((s) => s !== "GOOD").length;
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -65,18 +30,12 @@ export default function CompleteTaskForm({
     setLoading(true);
     const signatureBase64 = sigRef.current.toDataURL();
 
-    // Build equipment updates — only send items whose status changed
-    const equipmentUpdates = equipment
-      .filter((e) => equipmentStatuses[e.id] !== e.status)
-      .map((e) => ({ id: e.id, status: equipmentStatuses[e.id] ?? e.status }));
-
     const res = await fetch(`/api/tasks/${taskId}/complete`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         recipientName: recipientName.trim(),
         signatureBase64,
-        equipmentUpdates,
       }),
     });
 
@@ -100,11 +59,6 @@ export default function CompleteTaskForm({
       <div className="bg-white rounded-2xl border border-slate-100 shadow-sm py-20 text-center space-y-3">
         <div className="text-6xl">✅</div>
         <p className="text-xl font-bold text-green-700">המשימה הושלמה בהצלחה!</p>
-        {issueCount > 0 && (
-          <p className="text-sm text-yellow-600">
-            ⚠️ {issueCount} בעיות ציוד דווחו למנהל
-          </p>
-        )}
         <p className="text-slate-400 text-sm">מועבר ללוח הבקרה...</p>
       </div>
     );
@@ -143,57 +97,11 @@ export default function CompleteTaskForm({
         </div>
       </div>
 
-      {/* Step 2 — Equipment check */}
-      {equipment.length > 0 && (
-        <div className="bg-white rounded-2xl border border-slate-100 shadow-sm p-6 space-y-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <span className="w-6 h-6 bg-blue-600 text-white rounded-full text-xs flex items-center justify-center font-bold shrink-0">2</span>
-              <h2 className="font-bold text-slate-800">בדיקת ציוד</h2>
-            </div>
-            {issueCount > 0 && (
-              <span className="text-xs font-semibold text-red-600 bg-red-50 px-2.5 py-1 rounded-full">
-                {issueCount} בעיות
-              </span>
-            )}
-          </div>
-          <p className="text-slate-400 text-xs">לחץ על הסטטוס כדי לשנות. המנהל יראה את העדכון.</p>
-
-          <ul className="space-y-2">
-            {equipment.map((item) => {
-              const status = equipmentStatuses[item.id] ?? item.status;
-              const cfg = statusConfig[status];
-              const changed = status !== item.status;
-              return (
-                <li
-                  key={item.id}
-                  className={`flex items-center justify-between gap-3 px-4 py-3 rounded-xl border transition-colors ${
-                    changed ? "border-blue-200 bg-blue-50/40" : "border-slate-100 bg-slate-50"
-                  }`}
-                >
-                  <span className="text-sm font-medium text-slate-700 flex-1">{item.name}</span>
-                  <button
-                    type="button"
-                    onClick={() => cycleStatus(item.id)}
-                    className={`inline-flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-full ring-1 ring-inset transition-all ${cfg.color}`}
-                  >
-                    <span>{cfg.icon}</span>
-                    <span>{cfg.label}</span>
-                  </button>
-                </li>
-              );
-            })}
-          </ul>
-        </div>
-      )}
-
-      {/* Step 3 — Signature */}
+      {/* Step 2 — Signature */}
       <div className="bg-white rounded-2xl border border-slate-100 shadow-sm p-6 space-y-4">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <span className="w-6 h-6 bg-blue-600 text-white rounded-full text-xs flex items-center justify-center font-bold shrink-0">
-              {equipment.length > 0 ? "3" : "2"}
-            </span>
+            <span className="w-6 h-6 bg-blue-600 text-white rounded-full text-xs flex items-center justify-center font-bold shrink-0">2</span>
             <h2 className="font-bold text-slate-800">חתימת מקבל</h2>
           </div>
           <button

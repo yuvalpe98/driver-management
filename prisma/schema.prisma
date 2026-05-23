@@ -94,6 +94,8 @@ model TaskCompletion {
 
   taskId            String   @unique
   task              Task     @relation(fields: [taskId], references: [id])
+
+  scannedSerials    ScannedSerial[]
 }
 
 model TaskItem {
@@ -104,7 +106,24 @@ model TaskItem {
   taskId   String
   task     Task   @relation(fields: [taskId], references: [id])
 
+  scannedSerials ScannedSerial[]
+
   @@index([taskId])
+}
+
+model ScannedSerial {
+  id           String   @id @default(uuid())
+  serialNumber String   @unique            // globally unique — one physical unit, one delivery record
+  scannedAt    DateTime @default(now())    // exact delivery timestamp, ready for ERP webhook
+
+  taskItemId       String
+  taskItem         TaskItem       @relation(fields: [taskItemId], references: [id])
+
+  taskCompletionId String
+  taskCompletion   TaskCompletion @relation(fields: [taskCompletionId], references: [id])
+
+  @@index([taskItemId])
+  @@index([taskCompletionId])
 }
 
 model CatalogItem {
