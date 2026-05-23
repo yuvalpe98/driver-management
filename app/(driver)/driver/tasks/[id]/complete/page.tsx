@@ -12,11 +12,17 @@ export default async function CompleteTaskPage({
   const driverId = session!.user.id;
   const { id } = await params;
 
-  // SECURITY: ownership check — driver can only complete their own tasks
-  const task = await prisma.task.findUnique({
-    where: { id, assignedDriverId: driverId },
-    select: { id: true, title: true, deliveryAddress: true, status: true },
-  });
+  const [task, taskItems] = await Promise.all([
+    prisma.task.findUnique({
+      where: { id, assignedDriverId: driverId },
+      select: { id: true, title: true, deliveryAddress: true, status: true },
+    }),
+    prisma.taskItem.findMany({
+      where: { taskId: id },
+      select: { id: true, name: true, quantity: true },
+      orderBy: { id: "asc" },
+    }),
+  ]);
 
   if (!task || task.status === "COMPLETED" || task.status === "CANCELLED") {
     notFound();
@@ -24,13 +30,13 @@ export default async function CompleteTaskPage({
 
   return (
     <div className="space-y-6">
-      <div className="bg-blue-50 border border-blue-100 rounded-2xl px-5 py-4">
-        <p className="text-xs text-blue-500 font-medium mb-1">משלוח שמסתיים</p>
-        <p className="font-bold text-blue-900">{task.title}</p>
-        <p className="text-blue-600 text-sm mt-0.5">{task.deliveryAddress}</p>
+      <div className="bg-blue-50 dark:bg-blue-900/30 border border-blue-100 dark:border-blue-800 rounded-2xl px-5 py-4">
+        <p className="text-xs text-blue-500 dark:text-blue-400 font-medium mb-1">משלוח שמסתיים</p>
+        <p className="font-bold text-blue-900 dark:text-blue-100">{task.title}</p>
+        <p className="text-blue-600 dark:text-blue-300 text-sm mt-0.5">{task.deliveryAddress}</p>
       </div>
 
-      <CompleteTaskForm taskId={task.id} />
+      <CompleteTaskForm taskId={task.id} taskItems={taskItems} />
     </div>
   );
 }
