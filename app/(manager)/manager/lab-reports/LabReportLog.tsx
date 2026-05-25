@@ -1,6 +1,12 @@
 "use client";
 
 import { useState } from "react";
+import dynamic from "next/dynamic";
+
+const BarcodeScanner = dynamic(
+  () => import("@/components/ui/BarcodeScanner"),
+  { ssr: false },
+);
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -164,6 +170,7 @@ function SerialHistoryDrawer({
 
 export default function LabReportLog({ logs }: { logs: LogEntry[] }) {
   const [search, setSearch] = useState("");
+  const [showScanner, setShowScanner] = useState(false);
 
   // Serial history drawer state
   const [selectedSerial, setSelectedSerial] = useState<string | null>(null);
@@ -223,6 +230,17 @@ export default function LabReportLog({ logs }: { logs: LogEntry[] }) {
         />
       )}
 
+      {/* Scanner overlay */}
+      {showScanner && (
+        <BarcodeScanner
+          onScan={(code) => {
+            setSearch(code);
+            setShowScanner(false);
+          }}
+          onClose={() => setShowScanner(false)}
+        />
+      )}
+
       {/* Search + count */}
       <div className="flex items-center gap-3">
         <div className="relative flex-1">
@@ -237,8 +255,25 @@ export default function LabReportLog({ logs }: { logs: LogEntry[] }) {
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             placeholder="חיפוש לפי מ.ס, טכנאי, סוג לקוח או חלק..."
-            className="w-full pr-9 pl-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 placeholder-slate-400 text-sm focus:outline-none focus:ring-2 focus:ring-teal-500 transition"
+            className="w-full pr-9 pl-12 py-2.5 rounded-xl border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 placeholder-slate-400 text-sm focus:outline-none focus:ring-2 focus:ring-teal-500 transition"
           />
+          {/* Camera / barcode scan button */}
+          <button
+            type="button"
+            onClick={() => setShowScanner(true)}
+            title="סרוק ברקוד"
+            className={`absolute left-2 top-1/2 -translate-y-1/2 p-1.5 rounded-lg transition-colors ${
+              showScanner
+                ? "text-teal-600 bg-teal-50 dark:bg-teal-900/30"
+                : "text-slate-400 hover:text-teal-600 hover:bg-teal-50 dark:hover:bg-teal-900/20"
+            }`}
+          >
+            <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
+              <path strokeLinecap="round" strokeLinejoin="round"
+                d="M3 9V6a1 1 0 011-1h3M3 15v3a1 1 0 001 1h3m11-4v3a1 1 0 01-1 1h-3m4-13h-3a1 1 0 00-1 1v3" />
+              <path strokeLinecap="round" strokeLinejoin="round" d="M7 8h1v8H7zm4 0h1v4h-1zm4 0h1v8h-1zm-4 5h1v3h-1z" />
+            </svg>
+          </button>
         </div>
         <span className="text-xs text-slate-400 dark:text-slate-500 shrink-0 whitespace-nowrap">
           {filtered.length} / {logs.length} רשומות
