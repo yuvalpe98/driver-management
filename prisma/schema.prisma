@@ -232,6 +232,7 @@ model LabReleaseLog {
   serialNumber     String
   date             DateTime     @default(now())
   workingHours     Int
+  airPurity        Float?                          // oxygen purity % — optional (e.g. 95.5)
   customerType     CustomerType
   isInspectionOnly Boolean      @default(false)
   createdAt        DateTime     @default(now())

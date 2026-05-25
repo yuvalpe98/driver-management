@@ -36,6 +36,7 @@ export const createLabReleaseLogSchema = z.object({
   technicianId:    z.string().uuid(),
   date:            z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "תאריך לא תקין"),
   workingHours:    z.number().int().min(0).max(999_999),
+  airPurity:       z.number().min(0).max(100).optional().nullable(),
   customerType:    z.enum(["OCCASIONAL_CUSTOMER", "CLALIT_ENGINEERING"]),
   partIds:         z.array(z.string().uuid()),
   isInspectionOnly: z.boolean(),

@@ -19,6 +19,7 @@ export async function GET() {
       serialNumber:    true,
       date:            true,
       workingHours:    true,
+      airPurity:       true,
       customerType:    true,
       isInspectionOnly: true,
       createdAt:       true,
@@ -33,7 +34,7 @@ export async function GET() {
 
   const headers = [
     "תאריך", "שעה", "מספר סידורי", "טכנאי",
-    "שעות פעולה", "סוג לקוח", "חלקים שהוחלפו", "בדיקה בלבד",
+    "שעות פעולה", "טוהר אוויר (%)", "סוג לקוח", "חלקים שהוחלפו", "בדיקה בלבד",
   ];
 
   const rows = logs.map((log) => [
@@ -42,6 +43,7 @@ export async function GET() {
     log.serialNumber,
     log.technician.name,
     String(log.workingHours),
+    log.airPurity != null ? String(log.airPurity) : "",
     CUSTOMER_LABELS[log.customerType] ?? log.customerType,
     log.isInspectionOnly ? "" : log.parts.map((p) => p.name).join("; "),
     log.isInspectionOnly ? "כן" : "לא",

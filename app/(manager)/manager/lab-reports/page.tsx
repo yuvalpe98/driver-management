@@ -11,6 +11,7 @@ export default async function LabReportsPage() {
       serialNumber:     true,
       date:             true,
       workingHours:     true,
+      airPurity:        true,
       customerType:     true,
       isInspectionOnly: true,
       technician:       { select: { name: true } },

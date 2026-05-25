@@ -31,6 +31,7 @@ function blankForm() {
     technicianId:  "",
     date:          todayISO(),
     workingHours:  "" as string | number,
+    airPurity:     "" as string | number,
     customerType:  "" as CustomerType | "",
   };
 }
@@ -106,6 +107,7 @@ export default function LabReleaseForm({ technicians, parts }: Props) {
         technicianId:     form.technicianId,
         date:             form.date,
         workingHours:     Number(form.workingHours),
+        airPurity:        form.airPurity !== "" ? Number(form.airPurity) : null,
         customerType:     form.customerType,
         partIds:          Array.from(selectedParts),
         isInspectionOnly,
@@ -223,22 +225,45 @@ export default function LabReleaseForm({ technicians, parts }: Props) {
         </div>
       </div>
 
-      {/* ── Working Hours ────────────────────────────────────────────────── */}
-      <div>
-        <label className="block text-sm font-medium text-slate-700 dark:text-slate-200 mb-1.5">
-          שעות פעולה (מד-חיים) <span className="text-red-500">*</span>
-        </label>
-        <input
-          type="number"
-          className={inputBase}
-          placeholder="0"
-          min={0}
-          max={999999}
-          value={form.workingHours}
-          onChange={(e) => setForm((f) => ({ ...f, workingHours: e.target.value }))}
-          required
-          dir="ltr"
-        />
+      {/* ── Working Hours + Air Purity (side by side) ───────────────────── */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <div>
+          <label className="block text-sm font-medium text-slate-700 dark:text-slate-200 mb-1.5">
+            שעות פעולה (מד-חיים) <span className="text-red-500">*</span>
+          </label>
+          <input
+            type="number"
+            className={inputBase}
+            placeholder="0"
+            min={0}
+            max={999999}
+            value={form.workingHours}
+            onChange={(e) => setForm((f) => ({ ...f, workingHours: e.target.value }))}
+            required
+            dir="ltr"
+          />
+        </div>
+
+        <div>
+          <label className="block text-sm font-medium text-slate-700 dark:text-slate-200 mb-1.5">
+            טוהר אוויר (%)
+            <span className="text-slate-400 dark:text-slate-500 font-normal mr-1.5 text-xs">אופציונלי</span>
+          </label>
+          <div className="relative">
+            <input
+              type="number"
+              className={`${inputBase} pl-8`}
+              placeholder="95.0"
+              min={0}
+              max={100}
+              step={0.1}
+              value={form.airPurity}
+              onChange={(e) => setForm((f) => ({ ...f, airPurity: e.target.value }))}
+              dir="ltr"
+            />
+            <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-sm pointer-events-none">%</span>
+          </div>
+        </div>
       </div>
 
       {/* ── Customer Type ────────────────────────────────────────────────── */}

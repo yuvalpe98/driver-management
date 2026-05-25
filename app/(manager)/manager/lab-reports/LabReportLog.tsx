@@ -9,6 +9,7 @@ interface LogEntry {
   serialNumber: string;
   date: string;          // ISO string
   workingHours: number;
+  airPurity: number | null;
   customerType: "OCCASIONAL_CUSTOMER" | "CLALIT_ENGINEERING";
   isInspectionOnly: boolean;
   technician: { name: string };
@@ -123,6 +124,9 @@ function SerialHistoryDrawer({
                     <div className="flex flex-wrap gap-x-5 gap-y-1 text-sm text-slate-600 dark:text-slate-300 pr-7">
                       <span>👷 {log.technician.name}</span>
                       <span>⏱ {log.workingHours.toLocaleString()} שעות</span>
+                      {log.airPurity != null && (
+                        <span>💨 {log.airPurity}%</span>
+                      )}
                     </div>
 
                     {/* Badges row */}
@@ -267,6 +271,7 @@ export default function LabReportLog({ logs }: { logs: LogEntry[] }) {
                   </th>
                   <th className="text-right px-5 py-3 font-medium whitespace-nowrap hidden md:table-cell">טכנאי</th>
                   <th className="text-right px-5 py-3 font-medium whitespace-nowrap hidden sm:table-cell">שעות</th>
+                  <th className="text-right px-5 py-3 font-medium whitespace-nowrap hidden lg:table-cell">טוהר אוויר</th>
                   <th className="text-right px-5 py-3 font-medium whitespace-nowrap hidden lg:table-cell">לקוח</th>
                   <th className="text-right px-5 py-3 font-medium">חלקים / שירות</th>
                 </tr>
@@ -306,6 +311,21 @@ export default function LabReportLog({ logs }: { logs: LogEntry[] }) {
                         <span className="text-slate-700 dark:text-slate-200 font-medium">
                           {log.workingHours.toLocaleString()}
                         </span>
+                      </td>
+
+                      {/* Air purity */}
+                      <td className="px-5 py-3 hidden lg:table-cell whitespace-nowrap">
+                        {log.airPurity != null ? (
+                          <span className={`text-xs font-semibold px-2.5 py-1 rounded-full ${
+                            log.airPurity >= 93
+                              ? "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400"
+                              : "bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400"
+                          }`}>
+                            {log.airPurity}%
+                          </span>
+                        ) : (
+                          <span className="text-xs text-slate-300 dark:text-slate-600">—</span>
+                        )}
                       </td>
 
                       {/* Customer type */}

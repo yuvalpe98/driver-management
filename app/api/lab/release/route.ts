@@ -18,7 +18,7 @@ export async function POST(req: Request) {
     );
   }
 
-  const { serialNumber, technicianId, date, workingHours, customerType, partIds, isInspectionOnly } =
+  const { serialNumber, technicianId, date, workingHours, airPurity, customerType, partIds, isInspectionOnly } =
     parsed.data;
 
   // Validate technician exists and is active
@@ -47,6 +47,7 @@ export async function POST(req: Request) {
       technicianId,
       date: parsedDate,
       workingHours,
+      airPurity: airPurity ?? null,
       customerType,
       isInspectionOnly,
       parts: { connect: partIds.map((id) => ({ id })) },
@@ -56,6 +57,7 @@ export async function POST(req: Request) {
       serialNumber: true,
       date: true,
       workingHours: true,
+      airPurity: true,
       customerType: true,
       isInspectionOnly: true,
       technician: { select: { name: true } },

@@ -24,6 +24,7 @@ export async function GET(req: Request) {
       serialNumber:     true,
       date:             true,
       workingHours:     true,
+      airPurity:        true,
       customerType:     true,
       isInspectionOnly: true,
       technician:       { select: { name: true } },
