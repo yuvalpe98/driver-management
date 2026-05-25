@@ -286,6 +286,7 @@ export default function LabSettingsManager({ technicians: initTechs, parts: init
               👷 ניהול טכנאים
             </h2>
             <LabList
+              key="technicians"
               items={techs}
               apiBase="/api/lab/technicians"
               emptyLabel="אין טכנאים — הוסף את הראשון"
@@ -299,6 +300,7 @@ export default function LabSettingsManager({ technicians: initTechs, parts: init
               🔩 ניהול חלקים
             </h2>
             <LabList
+              key="parts"
               items={parts}
               apiBase="/api/lab/parts"
               emptyLabel="אין חלקים — הוסף את הראשון"
