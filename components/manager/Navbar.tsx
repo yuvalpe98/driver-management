@@ -36,7 +36,7 @@ export default function Navbar({ userName }: NavbarProps) {
                   d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4" />
               </svg>
             </div>
-            <span className="font-bold text-slate-800 dark:text-slate-100 text-sm">מערכת ניהול נהגים</span>
+            <span className="font-bold text-slate-800 dark:text-slate-100 text-sm">מערכת תפעול צי ומעבדה</span>
           </div>
 
           {/* Nav links */}

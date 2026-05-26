@@ -1,6 +1,6 @@
 {
-  "name": "ניהול נהגים",
-  "short_name": "נהגים",
+  "name": "מערכת תפעול צי ומעבדה",
+  "short_name": "צי ומעבדה",
   "start_url": "/",
   "display": "standalone",
   "orientation": "portrait",

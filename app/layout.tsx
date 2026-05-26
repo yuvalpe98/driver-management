@@ -9,13 +9,13 @@ const heebo = Heebo({
 });
 
 export const metadata: Metadata = {
-  title: "מערכת ניהול נהגים",
-  description: "מערכת לניהול נהגים ומשימות",
+  title: "מערכת תפעול צי ומעבדה",
+  description: "מערכת תפעול לנהגים, מעבדה וניהול",
   manifest: "/manifest.json",
   appleWebApp: {
     capable: true,
     statusBarStyle: "default",
-    title: "נהגים",
+    title: "צי ומעבדה",
   },
   other: {
     "mobile-web-app-capable": "yes",

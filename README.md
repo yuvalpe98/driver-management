@@ -1,4 +1,4 @@
-# Driver Management System
+# Fleet & Lab Operations System — מערכת תפעול צי ומעבדה
 
 A full-stack fleet and delivery management platform built for Hebrew-speaking teams. Supports three distinct user roles — Manager, Driver, and Lab User — with role-based dashboards, real-time notifications, and a barcode-verified delivery completion flow.
 
@@ -123,8 +123,8 @@ AuditLog (action, entityType, entityId, userId, ipAddress)
 ### Installation
 
 ```bash
-git clone https://github.com/yuvalpe98/driver-management
-cd driver-management
+git clone https://github.com/yuvalpe98/fleet-lab-ops
+cd fleet-lab-ops
 pnpm install
 
 # Copy and fill in environment variables

@@ -164,7 +164,7 @@ export default async function ManagerDashboard() {
             </svg>
           </div>
           <div>
-            <p className="font-semibold text-slate-800 dark:text-slate-100">ניהול נהגים</p>
+            <p className="font-semibold text-slate-800 dark:text-slate-100">ניהול צוות</p>
             <p className="text-slate-400 dark:text-slate-500 text-xs mt-0.5">הוספה, עריכה, הסרה</p>
           </div>
         </Link>

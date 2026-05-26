@@ -51,7 +51,7 @@ export default function LoginPage() {
                 d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4" />
             </svg>
           </div>
-          <h1 className="text-2xl font-bold text-slate-800 dark:text-slate-100">מערכת ניהול נהגים</h1>
+          <h1 className="text-2xl font-bold text-slate-800 dark:text-slate-100">מערכת תפעול צי ומעבדה</h1>
           <p className="text-slate-500 dark:text-slate-400 mt-1 text-sm">התחבר כדי להמשיך</p>
         </div>
 
@@ -114,7 +114,7 @@ export default function LoginPage() {
         </div>
 
         <p className="text-center text-xs text-slate-400 dark:text-slate-500 mt-6">
-          מערכת ניהול נהגים © {new Date().getFullYear()}
+          מערכת תפעול צי ומעבדה © {new Date().getFullYear()}
         </p>
       </div>
     </main>
